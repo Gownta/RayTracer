@@ -9,9 +9,7 @@ public:
   virtual void apply_gl() const = 0;
 
 protected:
-  Material()
-  {
-  }
+  Material() {}
 };
 
 class PhongMaterial : public Material {
@@ -20,6 +18,10 @@ public:
   virtual ~PhongMaterial();
 
   virtual void apply_gl() const;
+
+  const Colour & get_diffuse()   const { return m_kd; }
+  const Colour & get_specular()  const { return m_ks; }
+  double         get_shininess() const { return m_shininess; }
 
 private:
   Colour m_kd;

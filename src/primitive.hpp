@@ -2,29 +2,33 @@
 #define CS488_PRIMITIVE_HPP
 
 #include "algebra.hpp"
+#include "intersection.hpp"
 
 class Primitive {
 public:
-  virtual ~Primitive();
+  virtual ~Primitive() {}
+  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray) 
+    // = 0;
+    { return Intersection(); }
 };
 
 class Sphere : public Primitive {
 public:
-  virtual ~Sphere();
+  virtual ~Sphere() {}
 };
 
 class Cube : public Primitive {
 public:
-  virtual ~Cube();
+  virtual ~Cube() {}
 };
 
 class NonhierSphere : public Primitive {
 public:
   NonhierSphere(const Point3D& pos, double radius)
-    : m_pos(pos), m_radius(radius)
-  {
-  }
-  virtual ~NonhierSphere();
+    : m_pos(pos), m_radius(radius) {}
+  virtual ~NonhierSphere() {}
+
+  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
 
 private:
   Point3D m_pos;
@@ -38,7 +42,7 @@ public:
   {
   }
   
-  virtual ~NonhierBox();
+  virtual ~NonhierBox() {}
 
 private:
   Point3D m_pos;

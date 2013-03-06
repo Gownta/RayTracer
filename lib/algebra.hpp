@@ -160,6 +160,8 @@ public:
 
   double normalize();
 
+  Vector3D unit() const { Vector3D ret = *this; ret.normalize(); return ret; }
+
   Vector3D cross(const Vector3D& other) const
   {
     return Vector3D(
@@ -425,6 +427,32 @@ inline std::ostream& operator <<(std::ostream& os, const Matrix4x4& M)
             << "[" << M[3][0] << " " << M[3][1] << " " 
             << M[3][2] << " " << M[3][3] << "]";
 }
+/*
+class Colour {
+public:
+  Colour() { 
+    for (int i = 0; i < 4; ++i) m_rgba = 0;
+  }
+  Colour(double r, double g, double b, double a = 1.0) {
+    m_rgba[0] = r;
+    m_rgba[1] = g;
+    m_rgba[2] = b;
+    m_rgba[3] = a;
+  }
+  Colour(double c) {
+    m_rgba[0] = c;
+    m_rgba[1] = c;
+    m_rgba[2] = c;
+    m_rgba[3] = 1.0;
+  }
+
+  double R() const { return m_rgba[0]; }
+  double G() const { return m_rgba[1]; }
+  double B() const { return m_rgba[2]; }
+
+private:
+  double m_rgba[4];
+};*/
 
 class Colour
 {
@@ -434,7 +462,7 @@ public:
     , g_(g)
     , b_(b)
   {}
-  Colour(double c)
+  Colour(double c = 0.0)
     : r_(c)
     , g_(c)
     , b_(c)

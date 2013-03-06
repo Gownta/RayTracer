@@ -1,6 +1,7 @@
 #ifndef CS488_A4_HPP
 #define CS488_A4_HPP
 
+#include <list>
 #include <string>
 #include "algebra.hpp"
 #include "scene.hpp"

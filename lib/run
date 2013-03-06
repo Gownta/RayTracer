@@ -36,29 +36,48 @@ cd ~/cs488/handin/RayTracer
 
 # if the first argument is wipe, then wipe instead of building
 if [ "$1" = "wipe" ] ; then
+  echo "Deleting build/ directory"
   rm -rf build
   exit 0
 fi
 
 # ensure build/ contains the most up-to-date code
+echo "========================================"
+echo "Updating build/ directory"
+echo
+
 mkdir -p build
 cp -ruf src/*  build
 cp -ruf lib/*  build
 cp -ruf data/* build
 
+echo
+
 # make
+echo "========================================"
+echo "Building executable"
+echo
+
 cd build
 try make $@
 
+echo
+
 # run the executable
+echo "========================================"
+echo "Running executable"
 echo
-echo "Build successful: running executable"
-echo
+
 try ./rt
 
+echo
+
 # display the image
+echo "========================================"
+echo "Displaying the image"
 echo
-echo "Render successful: displaying the image"
-echo
+
 xdg-open scene.png
+
+echo
 

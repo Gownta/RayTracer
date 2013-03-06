@@ -1,5 +1,104 @@
 #include "scene.hpp"
 #include <iostream>
+#include "a2.hpp"
+
+SceneNode::SceneNode(const string & name)
+  : m_name(name)
+  , m_scale()
+  , m_translate()
+  , m_rotate()
+  , m_trans()
+  , m_invtrans()
+  , m_invtranspose()
+  , m_parent(0)
+  , m_children()
+{}
+
+SceneNode::~SceneNode() {}
+
+void SceneNode::rotate(char axis, double angle) {
+  m_rotate = rotation(angle * 2*M_PI / 360, axis) * m_rotate;
+  update_trans();
+}
+
+void SceneNode::rotate(const Matrix4x4 & rot) {
+  m_rotate = rot * m_rotate;
+  update_trans();
+}
+
+void SceneNode::scale(const Vector3D& amount) {
+  for (int i = 0; i < 3; ++i) m_scale[i] *= amount[i];
+  update_trans();
+}
+
+void SceneNode::translate(const Vector3D& amount) {
+  m_translate = m_translate + amount;
+  update_trans();
+}
+
+void SceneNode::update_trans() {
+  m_trans = translation(m_translate) * m_rotate * scaling(m_scale);
+  if (m_parent != NULL) m_trans = m_parent->get_transform() * m_trans;
+  m_invtrans = m_trans.invert();
+  m_invtranspose = m_invtranspose.transpose();
+}
+
+
+Intersection GeometryNode::intersect(const Point3D & _origin, const Vector3D & _ray) {
+  // perform the inverse transformation to get the ray from the primitives' perspective
+  Point3D  origin = get_inverse() * _origin;
+  Vector3D ray    = get_inverse() * _ray;
+
+  // intersect with the primitives
+  // for now, just one primitive
+  Intersection result = m_primitive->intersect(origin, ray);
+
+  // need to set the material and adjust the normal
+  if (result) {
+    result.material = m_material;
+    result.normal = get_inverse_transpose() * result.normal;
+    return result;
+  }
+
+  return Intersection();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
 
 SceneNode::SceneNode(const std::string& name)
   : m_name(name)
@@ -70,4 +169,5 @@ GeometryNode::GeometryNode(const std::string& name, Primitive* primitive)
 GeometryNode::~GeometryNode()
 {
 }
- 
+ */
+

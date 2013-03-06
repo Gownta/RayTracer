@@ -1,20 +1,19 @@
 #include "a4.hpp"
 #include "image.hpp"
 #include <cmath>
+#include "raytrace.hpp"
 
 using namespace std;
 
-struct Intersection {
-  SceneNode * object;
-  double distance;
+/*void get_geometry_nodes(vector<GeometryNode*> & ret, SceneNode * root) {
+  if (GeometryNode * gn = dynamic_cast<GeometryNode*>(root)) {
+    ret.push_back(gn);
+  }
 
-  Intersection() : object(NULL), distance(0.0) {}
-  Intersection(SceneNode * object, double distance) : object(object), distance(distance) {}
-
-  operator bool() const { return object != NULL; }
-};
-
-Intersection trace(SceneNode * root, const Point3D & eye, const Vector3D & ray);
+  for (SceneNode::ChildList::iterator it = root->children().begin(); it != root->children().end(); ++it) {
+    get_geometry_nodes(ret, *it);
+  }
+}a*/
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -33,8 +32,9 @@ void a4_render(// What to render
                )
 {
   /////////////////////////////////////
-  // Log and massage.
+  // Setup.
 
+  // TODO delnow
   if (true) {
     cerr << "rendering: scene       " << root << "\n"
          << "           to          " << filename << "\n"
@@ -56,19 +56,15 @@ void a4_render(// What to render
   Vector3D left = up.cross(view);
 
   // normalize all axes
-  double view_len = view.length();
-  double up_len   = up  .length();
-  double left_len = left.length();
-
-  const Vector3D X = (1/left_len)*left;
-  const Vector3D Y = (1/up_len)  *up;
-  const Vector3D Z = (1/view_len)*view;
+  const Vector3D X = left.unit();
+  const Vector3D Y = up  .unit();
+  const Vector3D Z = view.unit();
 
   // find the field of view scaling factor
-  double fov_scale = tan((fov/2) * 2*M_PI / 360);
+  // this factor is over the width of the image
+  double fov_scale = tan((fov/2) * 2*M_PI / 360) / (width / 2);
   
-  /////////////////////////////////////
-  // The image. The 3 is for RGB.
+  // Initialize the image. The 3 is for RGB.
   Image img(width, height, 3);
 
   /////////////////////////////////////
@@ -93,27 +89,95 @@ void a4_render(// What to render
   /////////////////////////////////////
   // Raytracing.
 
+  //vector<GeometryNode*> objs;
+  //get_geometry_nodes(objs, root);
+  setup(root, ambient, lights);
+
   for (int x = 0; x < width; ++x) for (int y = 0; y < height; ++y) {
     // compute the ray direction for pixel (x,y)
     // note that the pixels on screen have (0,0) in the top-left, which is in the first quadrant wrt axes X and Y
     double cx = (double)width / 2.0  - x;
     double cy = (double)height / 2.0 - y;
-    Vector3D ray = Z + cx * fov_scale * X + cy * fov_scale * Y;
+    Vector3D ray = (Z + cx * fov_scale * X + cy * fov_scale * Y).unit();
 
-    
-    
-    // does the ray from the eye to each sphere intersect the sphere?
+    Intersection2 display = get_colour(root, eye, ray);
+
+    if (display) {
+      img(x, y, 0) = display.colour.R();
+      img(x, y, 1) = display.colour.G();
+      img(x, y, 2) = display.colour.B();
+    }
   }
+
+    /*
+    // for each object, try intersecting
+    Intersection closest;
+
+    for (vector<GeometryNode*>::iterator it = objs.begin(); it != objs.end(); ++it) {
+      Intersection candidate = (**it).intersect(eye, ray);
+      if (candidate < closest) {
+        closest = candidate;
+      }
+    }
+
+    // if an intersection has occurred, draw it
+    if (closest) {
+      PhongMaterial * pm = dynamic_cast<PhongMaterial*>(closest.material);
+      if (!pm) {
+        cerr << "BAM!\n";
+        exit(1);
+      }
+
+      Colour display = ambient * pm->get_diffuse();
+
+      // for each light source, determine if it is visible
+      // if it is, phong light it
+      for (list<Light*>::const_iterator lit = lights.begin(); lit != lights.end(); ++lit) {
+        const Light & light = **lit;
+        Point3D at = eye + closest.distance * ray;
+        Vector3D l = light.position - at;
+        l.normalize();
+
+        double d2l = sqrt((light.position - at).length());
+
+        bool visible = true;
+        for (vector<GeometryNode*>::iterator it = objs.begin(); it != objs.end(); ++it) {
+          Intersection candidate = (**it).intersect(at, l);
+          if (candidate.distance < d2l) {
+            visible = false;
+            break;
+          }
+        }
+        if (!visible) continue;
+
+        double intensity = 1 / (light.falloff[0] + light.falloff[1]*d2l + light.falloff[2]*d2l*d2l);
+        double into = l.dot(closest.normal);
+        if (into < 0) continue; // the light is behind the surface
+        Vector3D reflect = 2*l.dot(closest.normal)*closest.normal - l;
+        double spec = pow(reflect.dot(-ray), pm->get_shininess());
+
+        Colour diffuse  = intensity * into * pm->get_diffuse()  * light.colour;
+        Colour specular = intensity * spec * pm->get_specular() * light.colour;
+
+        display = display + diffuse + specular;
+
+      }
+
+      img(x, y, 0) = display.R();
+      img(x, y, 1) = display.G();
+      img(x, y, 2) = display.B();
+      //img(x, y, 0) = pm->get_diffuse().R();
+      //img(x, y, 1) = pm->get_diffuse().G();
+      //img(x, y, 2) = pm->get_diffuse().B();
+      //img(x, y, 0) = closest.material->get_diffuse().R();
+      //img(x, y, 1) = closest.material->get_diffuse().G();
+      //img(x, y, 2) = closest.material->get_diffuse().B();
+    }
+    */
 
   /////////////////////////////////////
   // Save the image.
   img.savePng(filename);
   
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-Intersection trace(SceneNode * root, const Point3D & eye, const Vector3D & ray) {
-  return Intersection();
 }
 
