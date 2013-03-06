@@ -11,6 +11,8 @@ struct Light {
   Colour colour;
   Point3D position;
   double falloff[3];
+
+  double intensity(double d) const { return 1 / (falloff[0] + d*falloff[1] + d*d*falloff[2]); }
 };
 
 std::ostream& operator<<(std::ostream& out, const Light& l);

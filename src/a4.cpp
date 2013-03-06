@@ -5,18 +5,6 @@
 
 using namespace std;
 
-/*void get_geometry_nodes(vector<GeometryNode*> & ret, SceneNode * root) {
-  if (GeometryNode * gn = dynamic_cast<GeometryNode*>(root)) {
-    ret.push_back(gn);
-  }
-
-  for (SceneNode::ChildList::iterator it = root->children().begin(); it != root->children().end(); ++it) {
-    get_geometry_nodes(ret, *it);
-  }
-}a*/
-
-///////////////////////////////////////////////////////////////////////////////
-
 void a4_render(// What to render
                SceneNode* root,
                // Where to output the image
@@ -71,7 +59,6 @@ void a4_render(// What to render
   // Construct the background of the image.
 
   // TODO: improve
-
   // Currently: red-blue checkerboard.
   const int len = 32;
   for (int x = 0; x < width; ++x) for (int y = 0; y < height; ++y) {
@@ -80,7 +67,6 @@ void a4_render(// What to render
     
     bool red = (box_x + box_y) % 2;
 
-    // RGB
     img(x, y, 0) = (double)red / 2;
     img(x, y, 1) = 0;
     img(x, y, 2) = (double)(1 - red) / 2;
@@ -89,11 +75,10 @@ void a4_render(// What to render
   /////////////////////////////////////
   // Raytracing.
 
-  //vector<GeometryNode*> objs;
-  //get_geometry_nodes(objs, root);
   setup(root, ambient, lights);
 
   for (int x = 0; x < width; ++x) for (int y = 0; y < height; ++y) {
+  //for (int x = 160; x < 192; ++x) for (int y = 96; y < 128; ++y) {
     // compute the ray direction for pixel (x,y)
     // note that the pixels on screen have (0,0) in the top-left, which is in the first quadrant wrt axes X and Y
     double cx = (double)width / 2.0  - x;

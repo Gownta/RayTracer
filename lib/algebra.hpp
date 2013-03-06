@@ -162,6 +162,8 @@ public:
 
   Vector3D unit() const { Vector3D ret = *this; ret.normalize(); return ret; }
 
+  bool is_unit() const { return abs(length2() - 1.0) < 1e-10; }
+
   Vector3D cross(const Vector3D& other) const
   {
     return Vector3D(
