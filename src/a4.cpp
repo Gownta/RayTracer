@@ -22,24 +22,6 @@ void a4_render(// What to render
   /////////////////////////////////////
   // Setup.
 
-  // TODO delnow
-  if (true) {
-    cerr << "rendering: scene       " << root << "\n"
-         << "           to          " << filename << "\n"
-         << "           size        " << "(" << width << ", " << height << ")\n"
-         << "           eye         " << eye << "\n"
-         << "           view        " << view << "\n"
-         << "           up          " << up << "\n"
-         << "           fov         " << fov << "\n"
-         << "           ambient     " << ambient << "\n"
-         << "           lights:\n";
-
-    for (std::list<Light*>::const_iterator I = lights.begin(); I != lights.end(); ++I)
-    cerr << "               " << **I << "\n";
-
-    cerr << endl;
-  }
-
   // compute the left axis
   Vector3D left = up.cross(view);
 
@@ -78,7 +60,6 @@ void a4_render(// What to render
   setup(root, ambient, lights);
 
   for (int x = 0; x < width; ++x) for (int y = 0; y < height; ++y) {
-  //for (int x = 160; x < 192; ++x) for (int y = 96; y < 128; ++y) {
     // compute the ray direction for pixel (x,y)
     // note that the pixels on screen have (0,0) in the top-left, which is in the first quadrant wrt axes X and Y
     double cx = (double)width / 2.0  - x;
@@ -93,72 +74,6 @@ void a4_render(// What to render
       img(x, y, 2) = display.colour.B();
     }
   }
-
-    /*
-    // for each object, try intersecting
-    Intersection closest;
-
-    for (vector<GeometryNode*>::iterator it = objs.begin(); it != objs.end(); ++it) {
-      Intersection candidate = (**it).intersect(eye, ray);
-      if (candidate < closest) {
-        closest = candidate;
-      }
-    }
-
-    // if an intersection has occurred, draw it
-    if (closest) {
-      PhongMaterial * pm = dynamic_cast<PhongMaterial*>(closest.material);
-      if (!pm) {
-        cerr << "BAM!\n";
-        exit(1);
-      }
-
-      Colour display = ambient * pm->get_diffuse();
-
-      // for each light source, determine if it is visible
-      // if it is, phong light it
-      for (list<Light*>::const_iterator lit = lights.begin(); lit != lights.end(); ++lit) {
-        const Light & light = **lit;
-        Point3D at = eye + closest.distance * ray;
-        Vector3D l = light.position - at;
-        l.normalize();
-
-        double d2l = sqrt((light.position - at).length());
-
-        bool visible = true;
-        for (vector<GeometryNode*>::iterator it = objs.begin(); it != objs.end(); ++it) {
-          Intersection candidate = (**it).intersect(at, l);
-          if (candidate.distance < d2l) {
-            visible = false;
-            break;
-          }
-        }
-        if (!visible) continue;
-
-        double intensity = 1 / (light.falloff[0] + light.falloff[1]*d2l + light.falloff[2]*d2l*d2l);
-        double into = l.dot(closest.normal);
-        if (into < 0) continue; // the light is behind the surface
-        Vector3D reflect = 2*l.dot(closest.normal)*closest.normal - l;
-        double spec = pow(reflect.dot(-ray), pm->get_shininess());
-
-        Colour diffuse  = intensity * into * pm->get_diffuse()  * light.colour;
-        Colour specular = intensity * spec * pm->get_specular() * light.colour;
-
-        display = display + diffuse + specular;
-
-      }
-
-      img(x, y, 0) = display.R();
-      img(x, y, 1) = display.G();
-      img(x, y, 2) = display.B();
-      //img(x, y, 0) = pm->get_diffuse().R();
-      //img(x, y, 1) = pm->get_diffuse().G();
-      //img(x, y, 2) = pm->get_diffuse().B();
-      //img(x, y, 0) = closest.material->get_diffuse().R();
-      //img(x, y, 1) = closest.material->get_diffuse().G();
-      //img(x, y, 2) = closest.material->get_diffuse().B();
-    }
-    */
 
   /////////////////////////////////////
   // Save the image.

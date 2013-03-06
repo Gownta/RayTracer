@@ -10,6 +10,5 @@
 void setup(SceneNode * root, const Colour & ambient, const std::list<Light*> & lights);
 Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3D & uray);
 
-
 #endif // RAYTRACE_H
 

@@ -119,18 +119,6 @@ bool light_is_visible(const Light & light, const Point3D & p) {
   Vector3D lv = light.position - p;
   Vector3D ul = lv.unit();
   Intersection beam = get_intersection(ROOT, p, ul);
-  if (beam.distance <= lv.length() && false) {
-    cout << "visibility test on point p = " << p << "\n";
-    cout << "light is at              l = " << light.position << "\n";
-    cout << "difference is          l-p = " << (light.position - p) << "\n";
-    cout << "beam.distance              = " << beam.distance << "\n";
-    Point3D ip = p + beam.distance * ul;
-    Point3D o(200,50,-100);
-    cout << "intersection point         = " << ip << "\n";
-    cout << "effective R                = " << (ip - o).length() << "\n";
-    cout << "light distance             = " << lv.length() << "\n";
-    cout << endl;
-  }
   return beam.distance * beam.distance > lv.length2();
 }
 

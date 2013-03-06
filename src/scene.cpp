@@ -57,19 +57,6 @@ Intersection GeometryNode::intersect(const Point3D & _origin, const Vector3D & _
   if (result) {
     result.material = m_material;
     result.normal = get_inverse_transpose() * result.normal;
-
-    if (false)
-    cout
-    << "Intersection details: _origin = " << _origin << "\n"
-    << "                      _ray    = " << _ray << "\n"
-    << "                      dorigin = " << (origin - _origin) << "\n"
-    << "                      dray    = " << (ray - _ray) << "\n"
-    << "                      POI     = " << (_origin + result.distance * _ray) << "\n"
-    << "                      R       = " << (_origin + result.distance * _ray - Point3D(200,50,-100)).length() << "\n"
-    << "                      normal  = " << result.normal << "\n"
-    << "                      inline? = " << result.normal.dot(_origin + result.distance * _ray - Point3D(200,50,-100)) << "\n"
-    << endl;
-
     return result;
   }
 
