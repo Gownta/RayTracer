@@ -41,17 +41,27 @@ void a4_render(// What to render
   // Construct the background of the image.
 
   // TODO: improve
-  // Currently: red-blue checkerboard.
-  const int len = 32;
-  for (int x = 0; x < width; ++x) for (int y = 0; y < height; ++y) {
-    int box_x = x / len;
-    int box_y = y / len;
-    
-    bool red = (box_x + box_y) % 2;
+  int bg = 1;
+  if (bg == 1) {
+    // red-blue checkerboard
+    const int len = 32;
+    for (int x = 0; x < width; ++x) for (int y = 0; y < height; ++y) {
+      int box_x = x / len;
+      int box_y = y / len;
+      
+      bool red = (box_x + box_y) % 2;
 
-    img(x, y, 0) = (double)red / 2;
-    img(x, y, 1) = 0;
-    img(x, y, 2) = (double)(1 - red) / 2;
+      img(x, y, 0) = (double)red / 2;
+      img(x, y, 1) = 0;
+      img(x, y, 2) = (double)(1 - red) / 2;
+    }
+  } else if (bg == 2) {
+    // blue gradient
+    for (int x = 0; x < width; ++x) for (int y = 0; y < height; ++y) {
+      img(x, y, 0) = 0;
+      img(x, y, 1) = 0;
+      img(x, y, 2) = (double)y / height;
+    }
   }
 
   /////////////////////////////////////
@@ -60,10 +70,11 @@ void a4_render(// What to render
   setup(root, ambient, lights);
 
   for (int x = 0; x < width; ++x) for (int y = 0; y < height; ++y) {
+  //for (int x = 32; x < 96; ++x) for (int y = 32; y < 96; ++y) {
     // compute the ray direction for pixel (x,y)
     // note that the pixels on screen have (0,0) in the top-left, which is in the first quadrant wrt axes X and Y
-    double cx = (double)width / 2.0  - x;
-    double cy = (double)height / 2.0 - y;
+    double cx = (double)width / 2.0  - (x + 0.5);
+    double cy = (double)height / 2.0 - (y + 0.5);
     Vector3D ray = (Z + cx * fov_scale * X + cy * fov_scale * Y).unit();
 
     Intersection2 display = get_colour(root, eye, ray);
@@ -78,6 +89,5 @@ void a4_render(// What to render
   /////////////////////////////////////
   // Save the image.
   img.savePng(filename);
-  
 }
 

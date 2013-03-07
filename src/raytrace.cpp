@@ -83,12 +83,17 @@ Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3
       // the perfectly-reflected ray
       Vector3D ur = 2 * ul.dot(un) * un - ul;
 
-      // compute the diffuse and specular components
-      Colour diffuse  = i * (ul.dot(un))                            * pm->get_diffuse()  * light.colour;
-      Colour specular = i * pow(ur.dot(-uray), pm->get_shininess()) * pm->get_specular() * light.colour;
+      // accumulate the diffuse component
+      Colour diffuse = i * (ul.dot(un)) * pm->get_diffuse()  * light.colour;
+      display = display + diffuse;
 
-      // add to the accumulator
-      display = display + diffuse + specular;
+      // accumulate the specular component
+      // ignore the specular if the reflected light is in the wrong direction
+      double refdot = ur.dot(-uray);
+      if (refdot > 0) {
+        Colour specular = i * pow(refdot, pm->get_shininess()) * pm->get_specular() * light.colour;
+        display = display + specular;
+      }
     }
 
     // we have accumulated all light sources; return

@@ -57,6 +57,7 @@ Intersection GeometryNode::intersect(const Point3D & _origin, const Vector3D & _
   if (result) {
     result.material = m_material;
     result.normal = get_inverse_transpose() * result.normal;
+    assert(result.normal.dot(ray) < 0);
     return result;
   }
 
