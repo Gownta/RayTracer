@@ -70,6 +70,7 @@ void a4_render(// What to render
   setup(root, ambient, lights);
 
   for (int x = 0; x < width; ++x) for (int y = 0; y < height; ++y) {
+  //for (int x = 32; x < 96; ++x) for (int y = 32; y < 96; ++y) {
     // compute the ray direction for pixel (x,y)
     // note that the pixels on screen have (0,0) in the top-left, which is in the first quadrant wrt axes X and Y
     double cx = (double)width / 2.0  - (x + 0.5);
