@@ -41,3 +41,9 @@ Intersection NonhierSphere::intersect(const Point3D & origin, const Vector3D & r
   return ret;
 }
 
+/*Intersection NonhierBox::intersect(const Point3D & origin, const Vector3D & ray) {
+  
+  m_pos;
+  m_size;
+  return Intersection();
+}*/
