@@ -23,6 +23,7 @@ public:
   const Matrix4x4 & get_transform() const { return m_trans; }
   const Matrix4x4 & get_inverse() const { return m_invtrans; }
   const Matrix4x4 & get_inverse_transpose() const { return m_invtranspose; }
+  Matrix4x4 get_local_transform() const;
 
   void add_child(SceneNode * child) {
     m_children.push_back(child);
@@ -38,6 +39,8 @@ public:
   ChildList & children() { return m_children; }
 
   const string & get_name() const { return m_name; }
+
+  virtual void determine_bounds();
 
 private:
   // labeling
@@ -56,6 +59,10 @@ private:
   // structure
   SceneNode * m_parent;
   ChildList m_children;
+
+protected:
+  // boundary, before transformation
+  double m_bounding_radius;
 };
 
 class JointNode : public SceneNode {
@@ -86,6 +93,7 @@ public:
   void set_material(Material* material) { m_material = material; }
 
   Intersection intersect(const Point3D & origin, const Vector3D & ray);
+  virtual void determine_bounds();
 
 protected:
   Material* m_material;

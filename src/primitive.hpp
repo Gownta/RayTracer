@@ -15,9 +15,10 @@ public:
   virtual Intersection intersect(const Point3D & origin, const Vector3D & ray) 
     // = 0;
     { return Intersection(); }
+  virtual double get_bounding_radius() const { return 0; }
 };
 
-class Sphere : public Primitive {
+/*class Sphere : public Primitive {
 public:
   virtual ~Sphere() {}
 };
@@ -25,7 +26,7 @@ public:
 class Cube : public Primitive {
 public:
   virtual ~Cube() {}
-};
+};*/
 
 class NonhierSphere : public Primitive {
 public:
@@ -34,10 +35,16 @@ public:
   virtual ~NonhierSphere() {}
 
   virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
+  virtual double get_bounding_radius() const;
 
 private:
   Point3D m_pos;
   double m_radius;
+};
+
+class Sphere : public NonhierSphere {
+public:
+  Sphere() : NonhierSphere(Point3D(0,0,0), 1) {}
 };
 
 
@@ -51,6 +58,7 @@ public:
   typedef std::vector<int> Face;
 
   virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
+  virtual double get_bounding_radius() const;
   
 protected:
   std::vector<Point3D> m_verts;
@@ -102,6 +110,10 @@ public:
   virtual ~NonhierBox() {}
 };
 
+class Cube : public NonhierBox {
+public:
+  Cube() : NonhierBox(Point3D(0,0,0), 1) {}
+};
 
 /*
 class NonhierBox : public Primitive {

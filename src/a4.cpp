@@ -2,6 +2,7 @@
 #include "image.hpp"
 #include <cmath>
 #include "raytrace.hpp"
+#include <ctime>
 
 using namespace std;
 
@@ -19,6 +20,11 @@ void a4_render(// What to render
                const std::list<Light*>& lights
                )
 {
+  /////////////////////////////////////
+  // timing
+
+  clock_t start = clock();
+
   /////////////////////////////////////
   // Setup.
 
@@ -89,5 +95,12 @@ void a4_render(// What to render
   /////////////////////////////////////
   // Save the image.
   img.savePng(filename);
+
+  /////////////////////////////////////
+  // timing
+
+  clock_t end = clock();
+
+  cout << "Image generated in " << ((end - start) / CLOCKS_PER_SEC) << " seconds" << endl;
 }
 
