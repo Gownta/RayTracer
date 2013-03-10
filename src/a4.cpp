@@ -94,7 +94,8 @@ void a4_render(// What to render
 
   /////////////////////////////////////
   // Save the image.
-  img.savePng(filename);
+  //img.savePng(filename);
+  img.savePng("scene.png");
 
   /////////////////////////////////////
   // timing

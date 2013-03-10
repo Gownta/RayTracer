@@ -4,7 +4,7 @@
 
 SceneNode::SceneNode(const string & name)
   : m_name(name)
-  , m_scale()
+  , m_scale(1,1,1)
   , m_translate()
   , m_rotate()
   , m_trans()
@@ -45,7 +45,7 @@ void SceneNode::update_trans() {
   m_trans = get_local_transform(); //translation(m_translate) * m_rotate * scaling(m_scale);
   if (m_parent != NULL) m_trans = m_parent->get_transform() * m_trans;
   m_invtrans = m_trans.invert();
-  m_invtranspose = m_invtranspose.transpose();
+  m_invtranspose = m_invtrans.transpose();
 }
 
 void SceneNode::determine_bounds() {
@@ -76,8 +76,8 @@ Intersection GeometryNode::intersect(const Point3D & _origin, const Vector3D & _
   // need to set the material and adjust the normal
   if (result) {
     result.material = m_material;
-    result.normal = get_inverse_transpose() * result.normal;
-    assert(result.normal.dot(ray) < 0);
+    result.normal = (get_inverse_transpose() * result.normal).unit();
+    assert(result.normal.dot(_ray) < 0);
     return result;
   }
 

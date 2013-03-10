@@ -76,8 +76,12 @@ Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3
       Vector3D ul = (light.position - p).unit();
 
       // skip this light if it does not hit p
-      if (ul.dot(un) < 0) continue; // the light is behind the surface
-      if (!light_is_visible(light, p)) continue; // p is in shadow
+      if (ul.dot(un) < 0) {
+        continue; // the light is behind the surface
+      }
+      if (!light_is_visible(light, p)) {
+        continue; // p is in shadow
+      }
 
       // compute the intensity of the light
       double i = light.intensity(sqrt((light.position - p).length()));
