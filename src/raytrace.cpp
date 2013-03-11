@@ -18,7 +18,6 @@ static vector<GeometryNode*> OBJECTS;
 
 void get_geometry_nodes(vector<GeometryNode*> & ret, SceneNode * root);
 bool light_is_visible(const Light & light, const Point3D & p);
-Intersection get_intersection(SceneNode * root, const Point3D & origin, const Vector3D & uray);
 
 ///////////////////////////////////////////////////////////////////////////////
 // main functions
@@ -31,14 +30,13 @@ void setup(SceneNode * root, const Colour & ambient, const std::list<Light*> & l
   get_geometry_nodes(OBJECTS, root);
 
   root->determine_bounds();
-  //root->setup_global_trans();
 }
 
 Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3D & uray) {
   assert(uray.is_unit());
 
   // for each object, try intersecting
-  Intersection closest = get_intersection(root, origin, uray);
+  Intersection closest = root->intersect(origin, uray);
 
   // if an intersection has occurred, draw it
   if (closest) {
@@ -130,26 +128,7 @@ void get_geometry_nodes(vector<GeometryNode*> & ret, SceneNode * root) {
 bool light_is_visible(const Light & light, const Point3D & p) {
   Vector3D lv = light.position - p;
   Vector3D ul = lv.unit();
-  Intersection beam = get_intersection(ROOT, p, ul);
+  Intersection beam = ROOT->intersect(p, ul);
   return beam.distance * beam.distance > lv.length2();
-}
-
-Intersection get_intersection(SceneNode * root, const Point3D & origin, const Vector3D & uray) {
-  assert(uray.is_unit());
-
-  /*
-  // for each object, try intersecting
-  Intersection closest;
-
-  for (vector<GeometryNode*>::iterator it = OBJECTS.begin(); it != OBJECTS.end(); ++it) {
-    Intersection candidate = (**it).intersect(origin, uray);
-    if (candidate < closest) {
-      closest = candidate;
-    }
-  }
-
-  return closest;
-  */
-  return root->intersect(origin, uray);
 }
 
