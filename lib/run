@@ -32,7 +32,7 @@ try()
 clear
 
 # go to the root of Raytracer
-if [[ `hostname` -eq "Ultimatum" ]] ; then
+if [[ `hostname` == "Ultimatum" ]] ; then
   cd ~/dev/RayTracer
 else
   cd ~/cs488/handin/RayTracer
