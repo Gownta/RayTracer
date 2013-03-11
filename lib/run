@@ -32,7 +32,11 @@ try()
 clear
 
 # go to the root of Raytracer
-cd ~/cs488/handin/RayTracer
+if [[ `hostname` -eq "Ultimatum" ]] ; then
+  cd ~/dev/RayTracer
+else
+  cd ~/cs488/handin/RayTracer
+fi
 
 # if the first argument is wipe, then wipe instead of building
 if [ "$1" = "wipe" ] ; then
