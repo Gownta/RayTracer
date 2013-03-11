@@ -20,10 +20,16 @@ public:
   virtual ~SceneNode();
 
   // cummulative transformation - takes into account all parents' transformations
-  const Matrix4x4 & get_transform() const { return m_trans; }
+  /*const Matrix4x4 & get_transform() const { return m_trans; }
   const Matrix4x4 & get_inverse() const { return m_invtrans; }
   const Matrix4x4 & get_inverse_transpose() const { return m_invtranspose; }
-  Matrix4x4 get_local_transform() const;
+  Matrix4x4 get_local_transform() const;*/
+  
+  const Matrix4x4 & get_local_trans() const      { return m_local_trans; }
+  const Matrix4x4 & get_global_trans() const     { return m_global_trans; }
+  const Matrix4x4 & get_global_inverse() const   { return m_global_trans_inverse; }
+  const Matrix4x4 & get_global_normtrans() const { return m_global_trans_inverse_transpose; }
+  void setup_global_trans();
 
   void add_child(SceneNode * child) {
     m_children.push_back(child);
@@ -47,14 +53,22 @@ private:
   string m_name;
 
   // transformation
+  /*
   Vector3D m_scale;
   Vector3D m_translate;
   Matrix4x4 m_rotate;
 
   void update_trans();
   Matrix4x4 m_trans;
+  Matrix4x4 m_trans2;
   Matrix4x4 m_invtrans;
   Matrix4x4 m_invtranspose;
+  */
+  Matrix4x4 m_local_trans;
+
+  Matrix4x4 m_global_trans;
+  Matrix4x4 m_global_trans_inverse;
+  Matrix4x4 m_global_trans_inverse_transpose;
 
   // structure
   SceneNode * m_parent;

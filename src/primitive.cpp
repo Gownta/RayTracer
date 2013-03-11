@@ -46,9 +46,3 @@ double NonhierSphere::get_bounding_radius() const {
   return ret;
 }
 
-/*Intersection NonhierBox::intersect(const Point3D & origin, const Vector3D & ray) {
-  
-  m_pos;
-  m_size;
-  return Intersection();
-}*/

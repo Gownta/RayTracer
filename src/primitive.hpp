@@ -75,7 +75,7 @@ public:
     Vector3D y(0,size/2,0);
     Vector3D z(0,0,size/2);
     for (int i = 0; i < 8; ++i) {
-      Point3D place = pos;
+      Point3D place = pos + x + y + z;
       if (i & 0x1) place = place + x;
       else         place = place - x;
       if (i & 0x2) place = place + y;
