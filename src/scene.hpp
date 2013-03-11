@@ -6,6 +6,7 @@
 #include "primitive.hpp"
 #include "material.hpp"
 #include "intersection.hpp"
+#include "algorithms.hpp"
 
 using namespace std;
 
@@ -68,7 +69,7 @@ public:
   virtual void determine_bounds();
 
 protected:
-  double m_bounding_radius;
+  //double m_bounding_radius;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -93,7 +94,7 @@ protected:
 class GeometryNode : public SceneNode {
 public:
   GeometryNode(const std::string& name, Primitive* primitive)
-    : SceneNode(name), m_material(0), m_primitive(primitive) {}
+    : SceneNode(name), m_material(0), m_primitive(primitive), m_bounds() {}
 
   const Material* get_material() const { return m_material; }
   Material* get_material() { return m_material; }
@@ -106,6 +107,7 @@ public:
 protected:
   Material* m_material;
   Primitive* m_primitive;
+  BoundingSphere m_bounds;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

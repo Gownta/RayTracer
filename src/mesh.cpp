@@ -71,13 +71,17 @@ Intersection Mesh::intersect(const Point3D & origin, const Vector3D & uray) {
   return closest;
 }
 
-double Mesh::get_bounding_radius() const {
+BoundingSphere Mesh::get_bounds() const {
+  return find_minimal_bounding_sphere(m_verts);
+}
+
+/*double Mesh::get_bounding_radius() const {
   double max_distance = 0;
   for (vector<Point3D>::const_iterator it = m_verts.begin(); it != m_verts.end(); ++it) {
     max_distance = max(max_distance, (*it - Point3D(0,0,0)).length());
   }
   return max_distance;
-}
+}*/
 
 std::ostream& operator<<(std::ostream& out, const Mesh& mesh)
 {

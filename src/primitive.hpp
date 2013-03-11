@@ -3,6 +3,7 @@
 
 #include "algebra.hpp"
 #include "intersection.hpp"
+#include "algorithms.hpp"
 #include <vector>
 #include <iosfwd>
 
@@ -15,7 +16,8 @@ public:
   virtual Intersection intersect(const Point3D & origin, const Vector3D & ray) 
     // = 0;
     { return Intersection(); }
-  virtual double get_bounding_radius() const { return 0; }
+  //virtual double get_bounding_radius() const { return 0; }
+  virtual BoundingSphere get_bounds() const { return BoundingSphere(); }
 };
 
 /*class Sphere : public Primitive {
@@ -35,7 +37,8 @@ public:
   virtual ~NonhierSphere() {}
 
   virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
-  virtual double get_bounding_radius() const;
+  //virtual double get_bounding_radius() const;
+  virtual BoundingSphere get_bounds() const;
 
 private:
   Point3D m_pos;
@@ -58,7 +61,8 @@ public:
   typedef std::vector<int> Face;
 
   virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
-  virtual double get_bounding_radius() const;
+  //virtual double get_bounding_radius() const;
+  virtual BoundingSphere get_bounds() const;
   
 protected:
   std::vector<Point3D> m_verts;

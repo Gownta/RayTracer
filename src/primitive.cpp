@@ -41,8 +41,16 @@ Intersection NonhierSphere::intersect(const Point3D & origin, const Vector3D & r
   return ret;
 }
 
+BoundingSphere NonhierSphere::get_bounds() const {
+  BoundingSphere ret;
+  ret.origin = m_pos;
+  ret.radius = m_radius + 1e-5;
+  return ret;
+}
+/*
 double NonhierSphere::get_bounding_radius() const {
   double ret = m_radius + (m_pos - Point3D(0,0,0)).length();
   return ret;
 }
+*/
 

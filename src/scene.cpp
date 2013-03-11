@@ -15,7 +15,7 @@ SceneNode::SceneNode(const string & name)
   , m_parent(0)
   , m_children()
 
-  , m_bounding_radius(INFINITY)
+  //, m_bounding_radius(INFINITY)
 {}
 
 SceneNode::~SceneNode() {}
@@ -71,8 +71,13 @@ Intersection SceneNode::intersect(const Point3D & _origin, const Vector3D & _ray
 }
 
 void SceneNode::determine_bounds() {
-  m_bounding_radius = 0;
-  /*for (ChildList::iterator it = m_children.begin(); it != m_children.end(); ++it) {
+  for (ChildList::iterator it = m_children.begin(); it != m_children.end(); ++it) {
+    SceneNode & node = **it;
+    node.determine_bounds();
+  }
+  //m_bounding_radius = 0;
+  /*
+  for (ChildList::iterator it = m_children.begin(); it != m_children.end(); ++it) {
     SceneNode & node = **it;
     node.determine_bounds();
     double max_scale = max(node.m_scale[0], max(node.m_scale[1], node.m_scale[2]));
@@ -88,8 +93,9 @@ Intersection GeometryNode::intersect(const Point3D & _origin, const Vector3D & _
   Vector3D ray   = get_inverse() * _ray;
 
   // try to intersect with the bounding sphere first
-  //double closest_s = ((origin - Point3D(0,0,0)) - ((origin - Point3D(0,0,0)).dot(ray) * ray)).length2();
-  //if (closest_s > m_bounding_radius * m_bounding_radius) return Intersection();
+  Vector3D uray = ray.unit();
+  double closest_s = ((origin - m_bounds.origin) - ((origin - m_bounds.origin).dot(uray) * uray)).length2();
+  if (closest_s > m_bounds.radius * m_bounds.radius) return Intersection();
 
   // intersect with the primitive
   Intersection result = m_primitive->intersect(origin, ray);
@@ -106,6 +112,7 @@ Intersection GeometryNode::intersect(const Point3D & _origin, const Vector3D & _
 }
 
 void GeometryNode::determine_bounds() {
-  m_bounding_radius = m_primitive->get_bounding_radius();
+  //m_bounding_radius = m_primitive->get_bounding_radius();
+  m_bounds = m_primitive->get_bounds();
 }
 
