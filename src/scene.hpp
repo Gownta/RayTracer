@@ -71,6 +71,8 @@ protected:
   double m_bounding_radius;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+
 class JointNode : public SceneNode {
 public:
   JointNode(const string & name) : SceneNode(name) {}

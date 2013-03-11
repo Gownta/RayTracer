@@ -2,17 +2,26 @@
 #include <iostream>
 #include "a2.hpp"
 
+///////////////////////////////////////////////////////////////////////////////
+// construction
+
 SceneNode::SceneNode(const string & name)
   : m_name(name)
+
   , m_trans()
   , m_inverse()
   , m_normtrans()
+
   , m_parent(0)
   , m_children()
+
   , m_bounding_radius(INFINITY)
 {}
 
 SceneNode::~SceneNode() {}
+
+///////////////////////////////////////////////////////////////////////////////
+// transformations
 
 void SceneNode::rotate(char axis, double angle) {
   m_trans = m_trans * rotation(angle * 2*M_PI / 360, axis);
@@ -39,6 +48,9 @@ void SceneNode::update_trans() {
   m_normtrans = m_inverse.transpose();
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// intersection
+
 Intersection SceneNode::intersect(const Point3D & _origin, const Vector3D & _ray) {
   Point3D origin = get_inverse() * _origin;
   Vector3D ray   = get_inverse() * _ray;
@@ -54,14 +66,6 @@ Intersection SceneNode::intersect(const Point3D & _origin, const Vector3D & _ray
   if (closest) {
     closest.normal = (get_normtrans() * closest.normal).unit();
   }
-
-  if (0)
-  cout << "Attempting an intersection with " << get_name() << "\n"
-       << "                      _origin = " << _origin << "\n"
-       << "                      origin  = " << origin << "\n"
-       << "                      _ray    = " << _ray << "\n"
-       << "                      ray     = " << ray << "\n"
-       << endl;
 
   return closest;
 }
@@ -80,9 +84,6 @@ void SceneNode::determine_bounds() {
 
 Intersection GeometryNode::intersect(const Point3D & _origin, const Vector3D & _ray) {
   // perform the inverse transformation to get the ray from the primitives' perspective
-  /*Point3D origin = get_global_inverse() * _origin;
-  Vector3D ray   = get_global_inverse() * _ray;
-  */
   Point3D origin = get_inverse() * _origin;
   Vector3D ray   = get_inverse() * _ray;
 
@@ -96,7 +97,6 @@ Intersection GeometryNode::intersect(const Point3D & _origin, const Vector3D & _
   // need to set the material and adjust the normal
   if (result) {
     result.material = m_material;
-    //result.normal = (get_global_normtrans() * result.normal).unit();
     result.normal = (get_normtrans() * result.normal).unit();
     assert(result.normal.dot(_ray) < 0);
     return result;
