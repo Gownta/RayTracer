@@ -4,15 +4,9 @@
 
 SceneNode::SceneNode(const string & name)
   : m_name(name)
-  /*, m_local_trans()
-  , m_global_trans()
-  , m_global_trans_inverse()
-  , m_global_trans_inverse_transpose()*/
-
   , m_trans()
   , m_inverse()
   , m_normtrans()
-
   , m_parent(0)
   , m_children()
   , m_bounding_radius(INFINITY)
@@ -21,25 +15,21 @@ SceneNode::SceneNode(const string & name)
 SceneNode::~SceneNode() {}
 
 void SceneNode::rotate(char axis, double angle) {
-  //m_local_trans = m_local_trans * rotation(angle * 2*M_PI / 360, axis);
   m_trans = m_trans * rotation(angle * 2*M_PI / 360, axis);
   update_trans();
 }
 
 void SceneNode::rotate(const Matrix4x4 & rot) {
-  //m_local_trans = m_local_trans * rot;
   m_trans = m_trans * rot;
   update_trans();
 }
 
 void SceneNode::scale(const Vector3D& amount) {
-  //m_local_trans = m_local_trans * scaling(amount);
   m_trans = m_trans * scaling(amount);
   update_trans();
 }
 
 void SceneNode::translate(const Vector3D& amount) {
-  //m_local_trans = m_local_trans * translation(amount);
   m_trans = m_trans * translation(amount);
   update_trans();
 }
@@ -48,19 +38,6 @@ void SceneNode::update_trans() {
   m_inverse = m_trans.invert();
   m_normtrans = m_inverse.transpose();
 }
-
-/*void SceneNode::setup_global_trans() {
-  if (m_parent == NULL) m_global_trans = m_local_trans;
-  else                  m_global_trans = m_parent->get_global_trans() * m_local_trans;
-
-  m_global_trans_inverse = m_global_trans.invert();
-  m_global_trans_inverse_transpose = m_global_trans_inverse.transpose();
-
-  for (ChildList::iterator it = m_children.begin(); it != m_children.end(); ++it) {
-    SceneNode & node = **it;
-    node.setup_global_trans();
-  }
-}*/
 
 Intersection SceneNode::intersect(const Point3D & _origin, const Vector3D & _ray) {
   Point3D origin = get_inverse() * _origin;

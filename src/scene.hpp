@@ -12,60 +12,62 @@ using namespace std;
 ///////////////////////////////////////////////////////////////////////////////
 
 class SceneNode {
-public:
-  typedef vector<SceneNode*> ChildList;
-
+  /////////////////////////////////////
+  // construction
 public:
   SceneNode(const string & name);
   virtual ~SceneNode();
 
-  /*const Matrix4x4 & get_local_trans() const      { return m_local_trans; }
-  const Matrix4x4 & get_global_trans() const     { return m_global_trans; }
-  const Matrix4x4 & get_global_inverse() const   { return m_global_trans_inverse; }
-  const Matrix4x4 & get_global_normtrans() const { return m_global_trans_inverse_transpose; }
-  void setup_global_trans();*/
+  /////////////////////////////////////
+  // identification
+public:
+  const string & get_name() const { return m_name; }
+
+private:
+  string m_name;
+
+  /////////////////////////////////////
+  // transformations
+public:
   const Matrix4x4 & get_trans()     const { return m_trans; }
   const Matrix4x4 & get_inverse()   const { return m_inverse; }
   const Matrix4x4 & get_normtrans() const { return m_normtrans; }
-
-  void add_child(SceneNode * child) {
-    m_children.push_back(child);
-    child->m_parent = this;
-  }
 
   void rotate(char axis, double angle);
   void rotate(const Matrix4x4 & rot);
   void scale(const Vector3D & amount);
   void translate(const Vector3D & amount);
 
-  const ChildList & children() const { return m_children; }
-  ChildList & children() { return m_children; }
-
-  const string & get_name() const { return m_name; }
-
-  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
-  virtual void determine_bounds();
-
 private:
-  // labeling
-  string m_name;
-
-  // transformation
-  /*Matrix4x4 m_local_trans;
-  Matrix4x4 m_global_trans;
-  Matrix4x4 m_global_trans_inverse;
-  Matrix4x4 m_global_trans_inverse_transpose;*/
   Matrix4x4 m_trans;
   Matrix4x4 m_inverse;
   Matrix4x4 m_normtrans;
   void update_trans();
 
+  /////////////////////////////////////
   // structure
+public:
+  typedef vector<SceneNode*> ChildList;
+
+  void add_child(SceneNode * child) {
+    m_children.push_back(child);
+    child->m_parent = this;
+  }
+
+  const ChildList & children() const { return m_children; }
+  ChildList & children() { return m_children; }
+
+private:
   SceneNode * m_parent;
   ChildList m_children;
 
+  /////////////////////////////////////
+  // intersection
+public:
+  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
+  virtual void determine_bounds();
+
 protected:
-  // boundary, before transformation
   double m_bounding_radius;
 };
 
