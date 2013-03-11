@@ -31,7 +31,7 @@ void setup(SceneNode * root, const Colour & ambient, const std::list<Light*> & l
   get_geometry_nodes(OBJECTS, root);
 
   root->determine_bounds();
-  root->setup_global_trans();
+  //root->setup_global_trans();
 }
 
 Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3D & uray) {
@@ -137,6 +137,7 @@ bool light_is_visible(const Light & light, const Point3D & p) {
 Intersection get_intersection(SceneNode * root, const Point3D & origin, const Vector3D & uray) {
   assert(uray.is_unit());
 
+  /*
   // for each object, try intersecting
   Intersection closest;
 
@@ -148,5 +149,7 @@ Intersection get_intersection(SceneNode * root, const Point3D & origin, const Ve
   }
 
   return closest;
+  */
+  return root->intersect(origin, uray);
 }
 

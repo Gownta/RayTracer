@@ -19,11 +19,14 @@ public:
   SceneNode(const string & name);
   virtual ~SceneNode();
 
-  const Matrix4x4 & get_local_trans() const      { return m_local_trans; }
+  /*const Matrix4x4 & get_local_trans() const      { return m_local_trans; }
   const Matrix4x4 & get_global_trans() const     { return m_global_trans; }
   const Matrix4x4 & get_global_inverse() const   { return m_global_trans_inverse; }
   const Matrix4x4 & get_global_normtrans() const { return m_global_trans_inverse_transpose; }
-  void setup_global_trans();
+  void setup_global_trans();*/
+  const Matrix4x4 & get_trans()     const { return m_trans; }
+  const Matrix4x4 & get_inverse()   const { return m_inverse; }
+  const Matrix4x4 & get_normtrans() const { return m_normtrans; }
 
   void add_child(SceneNode * child) {
     m_children.push_back(child);
@@ -40,6 +43,7 @@ public:
 
   const string & get_name() const { return m_name; }
 
+  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
   virtual void determine_bounds();
 
 private:
@@ -47,10 +51,14 @@ private:
   string m_name;
 
   // transformation
-  Matrix4x4 m_local_trans;
+  /*Matrix4x4 m_local_trans;
   Matrix4x4 m_global_trans;
   Matrix4x4 m_global_trans_inverse;
-  Matrix4x4 m_global_trans_inverse_transpose;
+  Matrix4x4 m_global_trans_inverse_transpose;*/
+  Matrix4x4 m_trans;
+  Matrix4x4 m_inverse;
+  Matrix4x4 m_normtrans;
+  void update_trans();
 
   // structure
   SceneNode * m_parent;
@@ -88,7 +96,7 @@ public:
 
   void set_material(Material* material) { m_material = material; }
 
-  Intersection intersect(const Point3D & origin, const Vector3D & ray);
+  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
   virtual void determine_bounds();
 
 protected:
