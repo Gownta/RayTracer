@@ -24,6 +24,7 @@ void a4_render(// What to render
   // timing
 
   clock_t start = clock();
+  srand(time(NULL));
 
   /////////////////////////////////////
   // Setup.
@@ -47,7 +48,7 @@ void a4_render(// What to render
   // Construct the background of the image.
 
   // TODO: improve
-  int bg = 2;
+  int bg = 3;
   if (bg == 1) {
     // red-blue checkerboard
     const int len = 32;
@@ -68,6 +69,13 @@ void a4_render(// What to render
       img(x, y, 1) = 0;
       img(x, y, 2) = (double)y / height;
     }
+  } else if (bg == 3) {
+    // reverse sky gradient
+    for (int x = 0; x < width; ++x) for (int y = 0; y < height; ++y) {
+      img(x, y, 0) = 1 - (double)y / height;
+      img(x, y, 1) = 1 - (double)y / height;
+      img(x, y, 2) = 1;
+    }
   }
 
   /////////////////////////////////////
@@ -76,20 +84,47 @@ void a4_render(// What to render
   setup(root, ambient, lights);
 
   for (int x = 0; x < width; ++x) for (int y = 0; y < height; ++y) {
-  //for (int x = 126; x < 130; ++x) for (int y = 126; y < 130; ++y) {
+  //for (int x = 256; x < 320; ++x) for (int y = 256; y < 320; ++y) {
     // compute the ray direction for pixel (x,y)
     // note that the pixels on screen have (0,0) in the top-left, which is in the first quadrant wrt axes X and Y
     double cx = (double)width / 2.0  - (x + 0.5);
     double cy = (double)height / 2.0 - (y + 0.5);
-    Vector3D ray = (Z + cx * fov_scale * X + cy * fov_scale * Y).unit();
 
+
+    Colour bg(
+        img(x, y, 0),
+        img(x, y, 1),
+        img(x, y, 2)
+      );
+    Colour display(0,0,0);
+
+    int T = 8;
+    double ratio = 1.0 / (double)(T);
+    for (int i = 0; i < T; ++i) {
+      double dx = (double)(rand() % 1024) / 1024.0 - 0.5;
+      double dy = (double)(rand() % 1024) / 1024.0 - 0.5;
+
+      Vector3D ray = (Z + (cx + dx) * fov_scale * X + (cy + dy) * fov_scale * Y).unit();
+      Intersection2 d = get_colour(root, eye, ray);
+      if (d) {
+        display = display + ratio * d.colour;
+      } else {
+        display = display + ratio * bg;
+      }
+    }
+
+    img(x, y, 0) = display.R();
+    img(x, y, 1) = display.G();
+    img(x, y, 2) = display.B();
+
+    /*Vector3D ray = (Z + cx * fov_scale * X + cy * fov_scale * Y).unit();
     Intersection2 display = get_colour(root, eye, ray);
 
     if (display) {
       img(x, y, 0) = display.colour.R();
       img(x, y, 1) = display.colour.G();
       img(x, y, 2) = display.colour.B();
-    }
+    }*/
   }
 
   /////////////////////////////////////

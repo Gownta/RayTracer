@@ -64,6 +64,8 @@ Intersection Mesh::intersect(const Point3D & origin, const Vector3D & uray) {
       if (inside) {
         closest.distance = t;
         closest.normal = normal;
+        closest.texture_pos[0] = (point[0] + 1) / 2.0;
+        closest.texture_pos[1] = (point[2] + 1) / 2.0;
       }
     }
   }

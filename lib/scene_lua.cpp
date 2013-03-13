@@ -390,6 +390,43 @@ int gr_material_cmd(lua_State* L)
   return 1;
 }
 
+extern "C"
+int gr_optics_material_cmd(lua_State* L) {
+  GRLUA_DEBUG_CALL;
+  
+  gr_material_ud* data = (gr_material_ud*)lua_newuserdata(L, sizeof(gr_material_ud));
+  data->material = 0;
+  
+  double idx = luaL_checknumber(L, 1);
+  
+  data->material = new OpticsMaterial(idx);
+
+  luaL_newmetatable(L, "gr.material");
+  lua_setmetatable(L, -2);
+  
+  return 1;
+}
+
+extern "C"
+int gr_texture_material_cmd(lua_State* L) {
+  GRLUA_DEBUG_CALL;
+  
+  gr_material_ud* data = (gr_material_ud*)lua_newuserdata(L, sizeof(gr_material_ud));
+  data->material = 0;
+  
+  const char * file = luaL_checkstring(L, 1);
+  double ks[3];
+  get_tuple(L, 2, ks, 3);
+  double shininess = luaL_checknumber(L, 3);
+  
+  data->material = new TextureMaterial(file, Colour(ks[0], ks[1], ks[2]), shininess);
+
+  luaL_newmetatable(L, "gr.material");
+  lua_setmetatable(L, -2);
+  
+  return 1;
+}
+
 // Add a child to a node
 extern "C"
 int gr_node_add_child_cmd(lua_State* L)
@@ -412,6 +449,25 @@ int gr_node_add_child_cmd(lua_State* L)
 }
 
 // Set a node's material
+/*extern "C"
+int gr_node_set_texture_cmd(lua_State* L)
+{
+  GRLUA_DEBUG_CALL;
+  
+  gr_node_ud* selfdata = (gr_node_ud*)luaL_checkudata(L, 1, "gr.node");
+  luaL_argcheck(L, selfdata != 0, 1, "Node expected");
+
+  GeometryNode* self = dynamic_cast<GeometryNode*>(selfdata->node);
+
+  luaL_argcheck(L, self != 0, 1, "Geometry node expected");
+  
+  const char* file = luaL_checkstring(L, 1);
+
+  self->set_texture(file);
+
+  return 0;
+}*/
+
 extern "C"
 int gr_node_set_material_cmd(lua_State* L)
 {
@@ -533,6 +589,8 @@ static const luaL_reg grlib_functions[] = {
   {"sphere", gr_sphere_cmd},
   {"joint", gr_joint_cmd},
   {"material", gr_material_cmd},
+  {"optics_material", gr_optics_material_cmd},
+  {"texture_material", gr_texture_material_cmd},
   // New for assignment 4
   {"cube", gr_cube_cmd},
   {"nh_sphere", gr_nh_sphere_cmd},
@@ -559,6 +617,7 @@ static const luaL_reg grlib_node_methods[] = {
   {"__gc", gr_node_gc_cmd},
   {"add_child", gr_node_add_child_cmd},
   {"set_material", gr_node_set_material_cmd},
+  //{"set_texture", gr_node_set_texture_cmd},
   {"scale", gr_node_scale_cmd},
   {"rotate", gr_node_rotate_cmd},
   {"translate", gr_node_translate_cmd},

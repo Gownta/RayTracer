@@ -11,17 +11,17 @@ Matrix4x4 rotation(double angle, char axis)
   double c = cos(angle);
   double s = sin(angle);
 
-  if (axis == 'z') {
+  if (axis == 'z' || axis == 'Z') {
     r(0,0) = c;
     r(0,1) = -s;
     r(1,0) = s;
     r(1,1) = c;
-  } else if (axis == 'y') {
+  } else if (axis == 'y' || axis == 'Y') {
     r(0,0) = c;
     r(0,2) = s;
     r(2,0) = -s;
     r(2,2) = c;
-  } else if (axis == 'x') {
+  } else if (axis == 'x' || axis == 'X') {
     r(1,1) = c;
     r(1,2) = -s;
     r(2,1) = s;

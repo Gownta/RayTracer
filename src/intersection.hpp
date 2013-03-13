@@ -10,8 +10,9 @@ struct Intersection {
   double distance;
   Material * material;
   Vector3D normal;
+  double texture_pos[2];
 
-  Intersection() : distance(INFINITY), material(NULL), normal() {}
+  Intersection() : distance(INFINITY), material(NULL), normal(), texture_pos() {}
 
   operator bool() const { return distance != INFINITY; }
   bool operator<(const Intersection & other) const { return distance < other.distance; }
