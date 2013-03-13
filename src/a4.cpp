@@ -91,18 +91,18 @@ void a4_render(// What to render
     double cy = (double)height / 2.0 - (y + 0.5);
 
 
-    Colour bg(
+    /*Colour bg(
         img(x, y, 0),
         img(x, y, 1),
         img(x, y, 2)
       );
     Colour display(0,0,0);
 
-    int T = 8;
+    int T = 1;
     double ratio = 1.0 / (double)(T);
     for (int i = 0; i < T; ++i) {
-      double dx = (double)(rand() % 1024) / 1024.0 - 0.5;
-      double dy = (double)(rand() % 1024) / 1024.0 - 0.5;
+      double dx = 0;//(double)(rand() % 1024) / 1024.0 - 0.5;
+      double dy = 0;//(double)(rand() % 1024) / 1024.0 - 0.5;
 
       Vector3D ray = (Z + (cx + dx) * fov_scale * X + (cy + dy) * fov_scale * Y).unit();
       Intersection2 d = get_colour(root, eye, ray);
@@ -115,16 +115,16 @@ void a4_render(// What to render
 
     img(x, y, 0) = display.R();
     img(x, y, 1) = display.G();
-    img(x, y, 2) = display.B();
+    img(x, y, 2) = display.B();*/
 
-    /*Vector3D ray = (Z + cx * fov_scale * X + cy * fov_scale * Y).unit();
+    Vector3D ray = (Z + cx * fov_scale * X + cy * fov_scale * Y).unit();
     Intersection2 display = get_colour(root, eye, ray);
 
     if (display) {
       img(x, y, 0) = display.colour.R();
       img(x, y, 1) = display.colour.G();
       img(x, y, 2) = display.colour.B();
-    }*/
+    }
   }
 
   /////////////////////////////////////

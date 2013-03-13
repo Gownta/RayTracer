@@ -1,6 +1,7 @@
 #include "scene.hpp"
 #include <iostream>
 #include "a2.hpp"
+#include "primitive.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
 // construction
@@ -98,7 +99,14 @@ Intersection GeometryNode::intersect(const Point3D & _origin, const Vector3D & _
   if (closest_s > m_bounds.radius * m_bounds.radius) return Intersection();
 
   // intersect with the primitive
-  Intersection result = m_primitive->intersect(origin, ray);
+  Intersection result;
+  if (1) {
+    result = m_primitive->intersect(origin, ray);
+  } else {
+    // draw the bounding region
+    NonhierSphere nhs(m_bounds.origin, m_bounds.radius);
+    result = nhs.intersect(origin, ray);
+  }
 
   // need to set the material and adjust the normal
   if (result) {

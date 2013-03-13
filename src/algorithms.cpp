@@ -8,8 +8,13 @@ static BoundingSphere fmbsq(size_t k, const vector<Point3D> & points, const vect
 static BoundingSphere fmbsb(const vector<Point3D> & boundary);
 static Point3D on_both_planes(const Point3D & p1, const Vector3D & n1, const Point3D & p2, const Vector3D & n2);
 
+static BoundingSphere fwcs(const vector<Point3D> & points);
+
 BoundingSphere find_minimal_bounding_sphere(const vector<Point3D> & points) {
   BoundingSphere ret = fmbsq(points.size(), points, vector<Point3D>());
+
+  //BoundingSphere ret = fwcs(points);
+  //cout << ret.radius << endl;
 
   // sanity check
   for (vector<Point3D>::const_iterator it = points.begin(); it != points.end(); ++it) {
@@ -126,6 +131,28 @@ Point3D on_both_planes(const Point3D & p1, const Vector3D & n1, const Point3D & 
   assert(abs((ret - p1).dot(n1)) < 1e-5);
   assert(abs((ret - p2).dot(n2)) < 1e-5);
 
+  return ret;
+}
+
+// weighted center
+BoundingSphere fwcs(const vector<Point3D> & points) {
+  Vector3D acc(0,0,0);
+  for (vector<Point3D>::const_iterator it = points.begin(); it != points.end(); ++it) {
+    acc = acc + (*it - Point3D(0,0,0));
+  }
+  acc = (1.0 / points.size()) * acc;
+  
+  Point3D origin(acc[0], acc[1], acc[2]);
+
+  double maxR = 0;
+  for (vector<Point3D>::const_iterator it = points.begin(); it != points.end(); ++it) {
+    double nR = (*it - origin).length();
+    maxR = max(maxR, nR);
+  }
+
+  BoundingSphere ret;
+  ret.origin = origin;
+  ret.radius = maxR + EXTRA;
   return ret;
 }
 

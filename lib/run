@@ -72,7 +72,7 @@ echo "========================================"
 echo "Running executable"
 echo
 
-try ./rt
+try time ./rt
 
 echo
 
