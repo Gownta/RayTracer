@@ -293,6 +293,18 @@ size_t quarticRoots(
 		roots[i] = PolishRoot( 4, a, b, c, d, roots[i] );
 	}
 
+	/* remove non-roots */
+	//      fprintf(stderr,"REMOVE NONROOTS %d\n",nr);
+	for ( i=0; i < nr; i++ ) {
+		double r;
+		r = (((roots[i]+a)*roots[i]+b)*roots[i]+c)*roots[i]+d;
+		//              fprintf(stderr,"root %d is %g\n",i,r);
+		if ( fabs(r)>1e-4 ) {
+			roots[i] = roots[nr-1];
+			nr--; i--;
+		}
+	}
+
 	return nr;
 }
 
