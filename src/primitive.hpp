@@ -10,25 +10,20 @@
 #include <cassert>
 #include <algorithm>
 
+///////////////////////////////////////////////////////////////////////////////
+// Primitive Base-Class
+
 class Primitive {
 public:
   virtual ~Primitive() {}
-  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray) 
-    // = 0;
-    { return Intersection(); }
-  //virtual double get_bounding_radius() const { return 0; }
-  virtual BoundingSphere get_bounds() const { return BoundingSphere(); }
+
+  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray) const = 0;
+
+  virtual BoundingSphere get_bounds() const = 0;
 };
 
-/*class Sphere : public Primitive {
-public:
-  virtual ~Sphere() {}
-};
-
-class Cube : public Primitive {
-public:
-  virtual ~Cube() {}
-};*/
+///////////////////////////////////////////////////////////////////////////////
+// Algebraic Primitives
 
 class NonhierSphere : public Primitive {
 public:
@@ -36,8 +31,8 @@ public:
     : m_pos(pos), m_radius(radius) {}
   virtual ~NonhierSphere() {}
 
-  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
-  //virtual double get_bounding_radius() const;
+  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray) const;
+
   virtual BoundingSphere get_bounds() const;
 
 private:
@@ -50,8 +45,15 @@ public:
   Sphere() : NonhierSphere(Point3D(0,0,0), 1) {}
 };
 
+class Cylinder : public Primitive {
+public:
+  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
+  virtual BoundingSphere get_bounds();
+};
 
-// A polygonal mesh.
+///////////////////////////////////////////////////////////////////////////////
+// Meshes
+
 class Mesh : public Primitive {
 public:
   Mesh(const std::vector<Point3D>& verts,
@@ -60,8 +62,8 @@ public:
 
   typedef std::vector<int> Face;
 
-  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
-  //virtual double get_bounding_radius() const;
+  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray) const;
+
   virtual BoundingSphere get_bounds() const;
   
 protected:
@@ -119,22 +121,5 @@ public:
   Cube() : NonhierBox(Point3D(0,0,0), 1) {}
 };
 
-/*
-class NonhierBox : public Primitive {
-public:
-  NonhierBox(const Point3D& pos, double size)
-    : m_pos(pos), m_size(size)
-  {
-  }
-  
-  virtual ~NonhierBox() {}
-
-  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
-
-private:
-  Point3D m_pos;
-  double m_size;
-};
-*/
-
 #endif
+

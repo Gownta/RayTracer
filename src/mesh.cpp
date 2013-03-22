@@ -1,4 +1,4 @@
-#include "mesh.hpp"
+#include "primitive.hpp"
 #include <iostream>
 #include <cassert>
 #include "intersection.hpp"
@@ -10,11 +10,11 @@ using namespace std;
   : m_verts(verts),
     m_faces(faces) {}*/
 
-Intersection Mesh::intersect(const Point3D & origin, const Vector3D & uray) {
+Intersection Mesh::intersect(const Point3D & origin, const Vector3D & uray) const {
   // TODO: OPTIMIZE
   Intersection closest;
 
-  for (vector<Face>::iterator it = m_faces.begin(); it != m_faces.end(); ++it) {
+  for (vector<Face>::const_iterator it = m_faces.begin(); it != m_faces.end(); ++it) {
     // does the ray intersect this face?
     const Face & face = *it;
     

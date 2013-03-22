@@ -13,6 +13,7 @@
 //---------------------------------------------------------------------------
 
 #include "algebra.hpp"
+#include <iomanip>
 
 double Vector3D::normalize()
 {
@@ -141,3 +142,22 @@ Matrix4x4 Matrix4x4::invert() const
 
   return ret;
 }
+
+Matrix4x4 Matrix4x4::transpose() const {
+  Matrix4x4 ret;
+  for (size_t r = 0; r < 4; ++r) for (size_t c = 0; c < 4; ++c) ret(c,r) = (*this)(r,c);
+  return ret;
+}
+
+std::ostream & operator<<(std::ostream & os, const Matrix4x4 & m) {
+  for (int r = 0; r < 4; ++r) {
+    os << "[ ";
+    for (int c = 0; c < 4; ++c) {
+      os << std::setw(10) << m[r][c];
+      if (c != 3) os << ", ";
+    }
+    os << " ]\n";
+  }
+  return os;
+}
+

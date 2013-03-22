@@ -156,3 +156,50 @@ BoundingSphere fwcs(const vector<Point3D> & points) {
   return ret;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Matrix Helpers
+///////////////////////////////////////////////////////////////////////////////
+
+Matrix4x4 rotation(double angle, char axis)
+{
+  Matrix4x4 r;
+  
+  double c = cos(angle);
+  double s = sin(angle);
+
+  if (axis == 'z' || axis == 'Z') {
+    r(0,0) = c;
+    r(0,1) = -s;
+    r(1,0) = s;
+    r(1,1) = c;
+  } else if (axis == 'y' || axis == 'Y') {
+    r(0,0) = c;
+    r(0,2) = s;
+    r(2,0) = -s;
+    r(2,2) = c;
+  } else if (axis == 'x' || axis == 'X') {
+    r(1,1) = c;
+    r(1,2) = -s;
+    r(2,1) = s;
+    r(2,2) = c;
+  }
+
+  return r;
+}
+
+Matrix4x4 translation(const Vector3D & d) {
+  Matrix4x4 t;
+  t(0, 3) = d[0];
+  t(1, 3) = d[1];
+  t(2, 3) = d[2];
+  return t;
+}
+
+Matrix4x4 scaling(const Vector3D & v) {
+  Matrix4x4 s;
+  s(0, 0) = v[0];
+  s(1, 1) = v[1];
+  s(2, 2) = v[2];
+  return s;
+}
+

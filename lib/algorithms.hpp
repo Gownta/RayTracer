@@ -13,5 +13,10 @@ struct BoundingSphere {
 
 BoundingSphere find_minimal_bounding_sphere(const vector<Point3D> & points);
 
+// return transformation matrices for various simple transformations
+Matrix4x4 rotation(double angle, char axis);
+Matrix4x4 translation(const Vector3D& displacement);
+Matrix4x4 scaling(const Vector3D& scale);
+
 #endif // ALGORITHMS_H
 

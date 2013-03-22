@@ -1,6 +1,6 @@
 #include "scene.hpp"
 #include <iostream>
-#include "a2.hpp"
+#include "algorithms.hpp"
 #include "primitive.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -25,22 +25,26 @@ SceneNode::~SceneNode() {}
 // transformations
 
 void SceneNode::rotate(char axis, double angle) {
-  m_trans = m_trans * rotation(angle * 2*M_PI / 360, axis);
+  //m_trans = m_trans * rotation(angle * 2*M_PI / 360, axis);
+  m_trans = rotation(angle * 2*M_PI / 360, axis) * m_trans;
   update_trans();
 }
 
 void SceneNode::rotate(const Matrix4x4 & rot) {
-  m_trans = m_trans * rot;
+  //m_trans = m_trans * rot;
+  m_trans = rot * m_trans;
   update_trans();
 }
 
 void SceneNode::scale(const Vector3D& amount) {
-  m_trans = m_trans * scaling(amount);
+  //m_trans = m_trans * scaling(amount);
+  m_trans = scaling(amount) * m_trans;
   update_trans();
 }
 
 void SceneNode::translate(const Vector3D& amount) {
-  m_trans = m_trans * translation(amount);
+  //m_trans = m_trans * translation(amount);
+  m_trans = translation(amount) * m_trans;
   update_trans();
 }
 
@@ -92,6 +96,15 @@ Intersection GeometryNode::intersect(const Point3D & _origin, const Vector3D & _
   // perform the inverse transformation to get the ray from the primitives' perspective
   Point3D origin = get_inverse() * _origin;
   Vector3D ray   = get_inverse() * _ray;
+
+  /*
+  cout << "_origin = " << _origin << "\n";
+  cout << " origin = " <<  origin << "\n";
+  cout << "   _ray = " << _ray << "\n";
+  cout << "    ray = " <<  ray << "\n";
+  cout << get_trans() << "\n";
+  cout << get_inverse() << "\n\n";
+  */
 
   // try to intersect with the bounding sphere first
   Vector3D uray = ray.unit();

@@ -63,7 +63,7 @@ echo "Building executable"
 echo
 
 cd build
-try make $@
+try make
 
 echo
 
@@ -72,7 +72,7 @@ echo "========================================"
 echo "Running executable"
 echo
 
-try time ./rt
+try ./rt $@
 
 echo
 
@@ -81,7 +81,11 @@ echo "========================================"
 echo "Displaying the image"
 echo
 
-xdg-open scene.png
+if [ -e scene.png ] ; then
+  xdg-open scene.png
+else
+  echo "scene.png not found"
+fi
 
 echo
 

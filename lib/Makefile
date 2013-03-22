@@ -1,9 +1,9 @@
 SOURCES = $(wildcard *.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 DEPENDS = $(SOURCES:.cpp=.d)
-LDFLAGS = $(shell pkg-config --libs lua5.1) -llua5.1 -lpng
+LDFLAGS = $(shell pkg-config --libs lua5.1) -llua5.1 -lpng /usr/local/lib/libboost_program_options.a
 CPPFLAGS = $(shell pkg-config --cflags lua5.1)
-CXXFLAGS = $(CPPFLAGS) -W -Wall -g -Wno-unused-parameter
+CXXFLAGS = $(CPPFLAGS) -W -Wall -g -Wno-unused-parameter -std=c++11
 CXX = g++
 MAIN = rt
 
@@ -28,4 +28,5 @@ $(MAIN): $(OBJECTS)
                   | sed 's/\($*\)\.o[ :]*/\1.o $@ : /g' > $@; \
                 [ -s $@ ] || rm -f $@
 
-include $(DEPENDS)
+-include $(DEPENDS)
+
