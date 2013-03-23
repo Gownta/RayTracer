@@ -193,12 +193,16 @@ int gr_nh_sphere_cmd(lua_State* L)
 
   const char* name = luaL_checkstring(L, 1);
 
-  Point3D pos;
+  //Point3D pos;
+  Vector3D pos;
   get_tuple(L, 2, &pos[0], 3);
 
   double radius = luaL_checknumber(L, 3);
 
-  data->node = new GeometryNode(name, new NonhierSphere(pos, radius));
+  //data->node = new GeometryNode(name, new NonhierSphere(pos, radius));
+  data->node = new GeometryNode(name, new Sphere());
+  data->node->scale(Vector3D(radius, radius, radius));
+  data->node->translate(pos);
 
   luaL_getmetatable(L, "gr.node");
   lua_setmetatable(L, -2);
@@ -217,12 +221,16 @@ int gr_nh_box_cmd(lua_State* L)
 
   const char* name = luaL_checkstring(L, 1);
 
-  Point3D pos;
+  //Point3D pos;
+  Vector3D pos;
   get_tuple(L, 2, &pos[0], 3);
 
   double size = luaL_checknumber(L, 3);
 
-  data->node = new GeometryNode(name, new NonhierBox(pos, size));
+  //data->node = new GeometryNode(name, new NonhierBox(pos, size));
+  data->node = new GeometryNode(name, new Cube());
+  data->node->scale(Vector3D(size, size, size));
+  data->node->translate(pos);
 
   luaL_getmetatable(L, "gr.node");
   lua_setmetatable(L, -2);

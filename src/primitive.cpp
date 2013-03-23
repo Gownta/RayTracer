@@ -6,6 +6,9 @@
 
 using namespace std;
 
+///////////////////////////////////////////////////////////////////////////////
+// Algebraics
+
 Algebraic::Algebraic(const string & eqn, double radius)
     : m_eqn(parse_equation(eqn, true))
     , m_deg(0)
@@ -112,12 +115,47 @@ BoundingSphere Algebraic::get_bounds() const {
   return ret;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Meshes
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Instatiations
+
+Cube::Cube() : Mesh(vector<Point3D>(), vector<Face>()) {
+  for (int i = 0; i < 8; ++i) {
+    Point3D corner((bool)(i & 0x1), (bool)(i & 0x2), (bool)(i & 0x4));
+    m_verts.push_back(corner);
+  }
+
+  for (int j = 0; j < 6; ++j) {
+    Face f;
+    for (int i = 0; i < 8; ++i) {
+      bool exclude = 
+        (j == 0 &&  (i & 0x1)) ||
+        (j == 1 && !(i & 0x1)) ||
+        (j == 2 &&  (i & 0x2)) ||
+        (j == 3 && !(i & 0x2)) ||
+        (j == 4 &&  (i & 0x4)) ||
+        (j == 5 && !(i & 0x4));
+      if (!exclude) f.push_back(i);
+    }
+    
+    // problem - we need to order the vertices to be around the face, not diagonally.
+    if ((m_verts[f[0]] - m_verts[f[1]]).length2() > 1) std::swap(f[0], f[3]);
+    if ((m_verts[f[1]] - m_verts[f[2]]).length2() > 1) std::swap(f[0], f[1]);
+
+    assert(f.size() == 4);
+    m_faces.push_back(f);
+  }
+}
 
 
 
 
 
 
+/*
 Intersection NonhierSphere::intersect(const Point3D & origin, const Vector3D & ray) const {
   // a point is on a sphere if [(p - o) dot (p - o)] = r^2
   // a point is on the ray if p = o + tr
@@ -212,4 +250,4 @@ BoundingSphere Cylinder::get_bounds() {
   ret.radius = sqrt(2) + 1e-5;
   return ret;
 }
-
+*/

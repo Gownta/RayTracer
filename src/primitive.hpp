@@ -23,7 +23,7 @@ public:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// Algebraic Primitives
+// Algebraics
 
 class Algebraic : public Primitive {
 public:
@@ -39,6 +39,42 @@ private:
   double m_br;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+// Meshes
+
+class Mesh : public Primitive {
+public:
+  typedef std::vector<int> Face;
+
+  Mesh(const std::vector<Point3D>& verts,
+       const std::vector<Face>& faces)
+    : m_verts(verts), m_faces(faces) {}
+
+  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray) const;
+  virtual BoundingSphere get_bounds() const;
+  
+protected:
+  std::vector<Point3D> m_verts;
+  std::vector<Face> m_faces;
+
+  friend std::ostream& operator<<(std::ostream& out, const Mesh& mesh);
+};
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+// Specific Shapes
+
+class Sphere : public Algebraic {
+public:
+  Sphere() : Algebraic("x^2 + y^2 + z^2 - 1", 1) {}
+};
+
+class Cube : public Mesh {
+public:
+  Cube();
+};
+
+/*
 class NonhierSphere : public Primitive {
 public:
   NonhierSphere(const Point3D& pos, double radius)
@@ -54,38 +90,13 @@ private:
   double m_radius;
 };
 
-class Sphere : public Algebraic {
-public:
-  Sphere() : Algebraic("x^2 + y^2 + z^2 - 1", 1) {}
-};
-
 class Cylinder : public Primitive {
 public:
   virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
   virtual BoundingSphere get_bounds();
 };
-
-///////////////////////////////////////////////////////////////////////////////
-// Meshes
-
-class Mesh : public Primitive {
-public:
-  Mesh(const std::vector<Point3D>& verts,
-       const std::vector< std::vector<int> >& faces)
-    : m_verts(verts), m_faces(faces) {}
-
-  typedef std::vector<int> Face;
-
-  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray) const;
-
-  virtual BoundingSphere get_bounds() const;
-  
-protected:
-  std::vector<Point3D> m_verts;
-  std::vector<Face> m_faces;
-
-  friend std::ostream& operator<<(std::ostream& out, const Mesh& mesh);
-};
+*/
+/*
 
 class NonhierBox : public Mesh {
 public:
@@ -128,12 +139,12 @@ public:
   }
   
   virtual ~NonhierBox() {}
-};
-
+};*/
+/*
 class Cube : public NonhierBox {
 public:
   Cube() : NonhierBox(Point3D(0,0,0), 1) {}
-};
+};*/
 
 #endif
 

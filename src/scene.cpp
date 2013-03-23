@@ -117,8 +117,8 @@ Intersection GeometryNode::intersect(const Point3D & _origin, const Vector3D & _
     result = m_primitive->intersect(origin, ray);
   } else {
     // draw the bounding region
-    NonhierSphere nhs(m_bounds.origin, m_bounds.radius);
-    result = nhs.intersect(origin, ray);
+    //NonhierSphere nhs(m_bounds.origin, m_bounds.radius);
+    //result = nhs.intersect(origin, ray);
   }
 
   // need to set the material and adjust the normal
