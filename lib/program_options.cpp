@@ -20,6 +20,10 @@ void read_options(int argc, char ** argv) {
 
       // background
       ("background,b", po::value<int>()->default_value(2), "Background image selector.")
+
+      // render space
+      ("x-range,x", po::value<vector<int>>()->multitoken(), "Range of x-coordinates to draw")
+      ("y-range,y", po::value<vector<int>>()->multitoken(), "Range of y-coordinates to draw")
   ;
 
   // positional options

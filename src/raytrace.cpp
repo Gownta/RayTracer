@@ -76,9 +76,15 @@ Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3
 
         // skip this light if it does not hit p
         if (ul.dot(un) < 0) {
+          /*cout << "behind surface\n";
+          cout << "  point:  " << p << "\n"
+               << "  normal: " << un << "\n"
+               << "  light:  " << ul << "\n"
+               << "  (dot):  " << ul.dot(un) << "\n";*/
           continue; // the light is behind the surface
         }
         if (!light_is_visible(light, p)) {
+          //cout << "in shadow\n";
           continue; // p is in shadow
         }
 

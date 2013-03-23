@@ -5,6 +5,7 @@
 #include <ctime>
 #include "progress_bar.hpp"
 #include "background.hpp"
+#include "program_options.hpp"
 
 using namespace std;
 
@@ -46,8 +47,20 @@ void a4_render(// What to render
 
   setup(root, ambient, lights);
 
-  for (int x = 0; x < width; ++x) for (int y = 0; y < height; ++y) {
-  //for (int x = 128; x < 129; ++x) for (int y = 128; y < 129; ++y) {
+  // determine which range of the image to render
+  int x_min = 0, x_max = width, y_min = 0, y_max = height;
+  if (cmd_options().count("x-range")) {
+    vector<int> xr = cmd_options()["x-range"].as<vector<int>>();
+    if (xr.size() >= 1) x_min = xr[0];
+    if (xr.size() >= 2) x_max = xr[1];
+  }
+  if (cmd_options().count("y-range")) {
+    vector<int> yr = cmd_options()["y-range"].as<vector<int>>();
+    if (yr.size() >= 1) y_min = yr[0];
+    if (yr.size() >= 2) y_max = yr[1];
+  }
+
+  for (int x = x_min; x < x_max; ++x) for (int y = y_min; y < y_max; ++y) {
     // compute the ray direction for pixel (x,y)
     // note that the pixels on screen have (0,0) in the top-left, which is in the first quadrant wrt axes X and Y
     double cx = (double)width / 2.0  - (x + 0.5);

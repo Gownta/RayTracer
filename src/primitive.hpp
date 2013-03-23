@@ -9,6 +9,7 @@
 
 #include <cassert>
 #include <algorithm>
+#include "calc.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Primitive Base-Class
@@ -18,12 +19,25 @@ public:
   virtual ~Primitive() {}
 
   virtual Intersection intersect(const Point3D & origin, const Vector3D & ray) const = 0;
-
   virtual BoundingSphere get_bounds() const = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 // Algebraic Primitives
+
+class Algebraic : public Primitive {
+public:
+  Algebraic(const string & eq, double radius);
+  
+  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray) const;
+  virtual BoundingSphere get_bounds() const;
+
+private:
+  vector<Factor> m_eqn;
+  vector<Factor> m_dx, m_dy, m_dz;
+  int m_deg;
+  double m_br;
+};
 
 class NonhierSphere : public Primitive {
 public:
@@ -40,9 +54,9 @@ private:
   double m_radius;
 };
 
-class Sphere : public NonhierSphere {
+class Sphere : public Algebraic {
 public:
-  Sphere() : NonhierSphere(Point3D(0,0,0), 1) {}
+  Sphere() : Algebraic("x^2 + y^2 + z^2 - 1", 1) {}
 };
 
 class Cylinder : public Primitive {
