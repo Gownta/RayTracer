@@ -80,7 +80,10 @@ void a4_render(// What to render
 
   /////////////////////////////////////
   // Save the image.
-  //img.savePng(filename);
-  img.savePng("scene.png");
+  if (cmd_options().count("altfile")) {
+    img.savePng(filename);
+  } else {
+    img.savePng("scene.png");
+  }
 }
 

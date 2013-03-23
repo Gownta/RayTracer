@@ -24,6 +24,9 @@ void read_options(int argc, char ** argv) {
       // render space
       ("x-range,x", po::value<vector<int>>()->multitoken(), "Range of x-coordinates to draw")
       ("y-range,y", po::value<vector<int>>()->multitoken(), "Range of y-coordinates to draw")
+
+      // render location
+      ("altfile,F", "Output the png to the render file instead of scene.png")
   ;
 
   // positional options

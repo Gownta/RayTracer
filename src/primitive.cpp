@@ -97,11 +97,7 @@ Intersection Algebraic::intersect(const Point3D & _origin, const Vector3D & ray)
       closest.normal = Vector3D(dx, dy, dz).unit();
 
       double dot = closest.normal.dot(ray);
-      if (dot > 0 && dot < 1e-5) closest.normal = -closest.normal;
-
-      /*cout << "line " << origin << " + t*" << ray << "\n"
-           << "intersected the torus at t = " << closest.distance << ", i.e. point " << at << "\n"
-           << "the normal was " << closest.normal << "\n\n";*/
+      if (dot > 0) closest.normal = -closest.normal;
     }
   }
 
