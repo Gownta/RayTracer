@@ -27,6 +27,9 @@ void read_options(int argc, char ** argv) {
 
       // render location
       ("altfile,F", "Output the png to the render file instead of scene.png")
+
+      // render style
+      ("reverse,R", "Reverse the order of matrix composition")
   ;
 
   // positional options

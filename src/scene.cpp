@@ -2,6 +2,7 @@
 #include <iostream>
 #include "algorithms.hpp"
 #include "primitive.hpp"
+#include "program_options.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
 // construction
@@ -25,26 +26,26 @@ SceneNode::~SceneNode() {}
 // transformations
 
 void SceneNode::rotate(char axis, double angle) {
-  //m_trans = m_trans * rotation(angle * 2*M_PI / 360, axis);
-  m_trans = rotation(angle * 2*M_PI / 360, axis) * m_trans;
+  if (cmd_options().count("reverse")) m_trans = m_trans * rotation(angle * 2*M_PI / 360, axis);
+  else                                m_trans = rotation(angle * 2*M_PI / 360, axis) * m_trans;
   update_trans();
 }
 
 void SceneNode::rotate(const Matrix4x4 & rot) {
-  //m_trans = m_trans * rot;
-  m_trans = rot * m_trans;
+  if (cmd_options().count("reverse")) m_trans = m_trans * rot;
+  else                                m_trans = rot * m_trans;
   update_trans();
 }
 
 void SceneNode::scale(const Vector3D& amount) {
-  //m_trans = m_trans * scaling(amount);
-  m_trans = scaling(amount) * m_trans;
+  if (cmd_options().count("reverse")) m_trans = m_trans * scaling(amount);
+  else                                m_trans = scaling(amount) * m_trans;
   update_trans();
 }
 
 void SceneNode::translate(const Vector3D& amount) {
-  //m_trans = m_trans * translation(amount);
-  m_trans = translation(amount) * m_trans;
+  if (cmd_options().count("reverse")) m_trans = m_trans * translation(amount);
+  else                                m_trans = translation(amount) * m_trans;
   update_trans();
 }
 
@@ -60,6 +61,14 @@ Intersection SceneNode::intersect(const Point3D & _origin, const Vector3D & _ray
   Point3D origin = get_inverse() * _origin;
   Vector3D ray   = get_inverse() * _ray;
 
+  /*cout << get_name() << "\n";
+  cout << "_origin = " << _origin << "\n";
+  cout << " origin = " <<  origin << "\n";
+  cout << "   _ray = " << _ray << "\n";
+  cout << "    ray = " <<  ray << "\n";
+  cout << get_trans() << "\n";
+  cout << get_inverse() << "\n\n";
+*/
   Intersection closest;
 
   for (ChildList::iterator it = m_children.begin(); it != m_children.end(); ++it) {
@@ -97,15 +106,14 @@ Intersection GeometryNode::intersect(const Point3D & _origin, const Vector3D & _
   Point3D origin = get_inverse() * _origin;
   Vector3D ray   = get_inverse() * _ray;
 
-  /*
+  /*cout << get_name() << "\n";
   cout << "_origin = " << _origin << "\n";
   cout << " origin = " <<  origin << "\n";
   cout << "   _ray = " << _ray << "\n";
   cout << "    ray = " <<  ray << "\n";
   cout << get_trans() << "\n";
   cout << get_inverse() << "\n\n";
-  */
-
+*/
   // try to intersect with the bounding sphere first
   Vector3D uray = ray.unit();
   double closest_s = ((origin - m_bounds.origin) - ((origin - m_bounds.origin).dot(uray) * uray)).length2();

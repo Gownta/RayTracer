@@ -1,60 +1,95 @@
--- A simple scene with some miscellaneous geometry.
+-- test for hierarchical ray-tracers.
+-- Thomas Pflaum 1996
 
-mat1 = gr.material({0.7, 1.0, 0.7}, {0.5, 0.7, 0.5}, 25)
-mat2 = gr.material({0.5, 0.5, 0.5}, {0.5, 0.7, 0.5}, 25)
-mat3 = gr.material({1.0, 0.6, 0.1}, {0.5, 0.7, 0.5}, 25)
-mat4 = gr.material({0.7, 0.6, 1.0}, {0.5, 0.4, 0.8}, 25)
+gold = gr.material({0.9, 0.8, 0.4}, {0.8, 0.8, 0.4}, 25)
+grass = gr.material({0.1, 0.7, 0.1}, {0.0, 0.0, 0.0}, 0)
+blue = gr.material({0.7, 0.6, 1}, {0.5, 0.4, 0.8}, 25)
 
-scene_root = gr.node('root')
+scene = gr.node('scene')
+scene:translate(6, -2, -15)
+scene:rotate('X', 23)
 
-simples = {}
-D = 40
-S = 10
+-- the arc
+arc = gr.node('arc')
+scene:add_child(arc)
+arc:rotate('Y', 60)
+arc:translate(0,0,-10)
 
-require('dodeca')
-require('icosa')
+p1 = gr.cube('p1')
+arc:add_child(p1)
+p1:set_material(gold)
+p1:translate(-2.4, 0, -0.4)
+p1:scale(0.8, 4, 0.8)
 
-simples[1] = gr.sphere('sphere')
-simples[2] = gr.cube('cube')
-simples[3] = dodeca
-simples[4] = icosa
-simples[5] = gr.algebraic('torus', '(x^2 + y^2 + z^2 + 0.75^2 - 0.25^2)^2 - 4*0.75^2*(x^2 + y^2)', 0.75+0.25)
-simples[6] = gr.algebraic('limacon', '(x^2 + y^2 + z^2 - x)^2 - (x^2 + y^2 + z^2)', 2)
-simples[7] = gr.algebraic('lemniscate of Bernoulli', '(x^2 + y^2 + z^2)^2 - 2*(x^2 - y^2 - z^2)', 1.4143)
-simples[8] = gr.algebraic('lemniscate of Gerono', 'x^4 - x^2 + y^2 + z^2', 1)
-simples[9] = gr.algebraic('hippopede', '(x^2 + y^2 + z^2)^2 - 4*(x^2 + 0.2*(y^2 + z^2))', 2)
-simples[10]= gr.algebraic('deltoid', '(x^2 + y^2 + z^2)^2 + 18*(x^2 + y^2 + z^2) - 27 - 8*(x^3 - 3*x*(y^2 + z^2))', 3)
-                simples[10]:scale(0.3, 0.3, 0.3)
-simples[11]= gr.algebraic('bean', 'x^4 + x^2*(y^2 + z^2) + (y^2 + z^2)^2 - x*(x^2 + y^2 + z^2)', 2)
-simples[12]= gr.algebraic('bicuspid', '(x^2 - 1)*(x - 1)^2 + (y^2 + z^2 - 1)^2', 2)
-                simples[12]:rotate('Y', -90)
-n = table.getn(simples)
+p2 = gr.cube('p2')
+arc:add_child(p2)
+p2:set_material(gold)
+p2:translate(1.6, 0, -0.4)
+p2:scale(0.8, 4, 0.8)
 
-for i = 1, n do
-  elem = simples[i]
+s = gr.sphere('s')
+arc:add_child(s)
+s:set_material(gold)
+s:translate(0, 4, 0)
+s:scale(4, 0.6, 0.6)
 
-  elem:scale(S, S, S)
-  elem:set_material(mat1)
-  
-  displays = {}
-  for j = 1, 4 do
-    displays[j] = gr.node('d')
-  end
+-- the floor
+plane = gr.mesh('plane', {
+	{-1, 0, -1},
+	{ 1, 0, -1},
+	{1,  0, 1},
+	{-1, 0, 1},
+     }, {
+	{3, 2, 1, 0}
+     })
+scene:add_child(plane)
+plane:set_material(grass)
+plane:scale(30, 30, 30)
 
-  displays[2]:rotate('X', 25)
-  displays[3]:rotate('Y', 25)
-  displays[4]:rotate('Z', 25)
+-- sphere
+poly = gr.mesh('poly', {
+    {   1.,             1.,              1.},
+    {   1.,             1.,              -1.},
+    {   1.,             -1.,             1.},
+    {   1.,             -1.,             -1.},
+    {  -1.,             1.,              1.},
+    {  -1.,             1.,              -1.},
+    {  -1.,             -1.,             1.},
+    {  -1.,             -1.,             -1.},
+    {   0.618034,        1.618034,        0.},
+    {  -0.618034,        1.618034,        0.},
+    {   0.618034,       -1.618034,        0.},
+    {  -0.618034,       -1.618034,        0.},
+    {   1.618034,        0.,              0.618034},
+    {   1.618034,        0.,             -0.618034},
+    {  -1.618034,        0.,              0.618034},
+    {  -1.618034,        0.,             -0.618034},
+    {   0.,             0.618034,         1.618034},
+    {   0.,             -0.618034,        1.618034},
+    {   0.,             0.618034,        -1.618034},
+    {   0.,             -0.618034,       -1.618034}
+   }, {
+    {  1,       8,       0,       12,      13 },
+    {  4,       9,       5,       15,      14 },
+    {  2,       10,      3,       13,      12 },
+    {  7,       11,      6,       14,      15 },
+    {  2,       12,      0,       16,      17 },
+    {  1,       13,      3,       19,      18 },
+    {  4,       14,      6,       17,      16 },
+    {  7,       15,      5,       18,      19 },
+    {  4,       16,      0,        8,       9 },
+    {  2,       17,      6,       11,      10 },
+    {  1,       18,      5,        9,       8 },
+    {  7,       19,      3,       10,      11 }
+ })
+scene:add_child(poly)
+poly:translate(-2, 1.618034, 0)
+poly:set_material(blue)
 
-  for j = 1, 4 do
-    displays[j]:add_child(elem)
-    displays[j]:translate(D * i, D * (5 - j), 0)
-    scene_root:add_child(displays[j])
-  end
-end
+-- The lights
+l1 = gr.light({200,200,400}, {0.8, 0.8, 0.8}, {1, 0, 0})
+l2 = gr.light({0, 5, -20}, {0.4, 0.4, 0.8}, {1, 0, 0})
 
-white_light = gr.light({-100.0, 150.0, 400.0}, {0.9, 0.9, 0.9}, {1, 0, 0})
-orange_light = gr.light({400.0, 100.0, 150.0}, {0.7, 0.0, 0.7}, {1, 0, 0})
-
-gr.render(scene_root, 'primitives.png', (n+1)*D*4, (4+1)*D*4,
-	  {(n+1)*D/2, 5*D/2, (n+1)*D*1.07225}, {0, 0, -1}, {0, 1, 0}, 50,
-	  {0.3, 0.3, 0.3}, {white_light, orange_light})
+gr.render(scene, 'hier.png', 256, 256, 
+	  {0, 0, 0,}, {0, 0, -1}, {0, 1, 0}, 50,
+	  {0.4, 0.4, 0.4}, {l1, l2})
