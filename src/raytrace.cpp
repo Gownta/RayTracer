@@ -157,7 +157,7 @@ Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3
         double i = light.intensity(sqrt((light.position - p).length()));
 
         // the perfectly-reflected ray
-        Vector3D ur = 2 * ul.dot(un) * un - ul;
+        //Vector3D ur = 2 * ul.dot(un) * un - ul;
 
         // accumulate the diffuse component
         Colour diffuse = i * (ul.dot(un)) * texture * light.colour;
