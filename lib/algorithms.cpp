@@ -1,20 +1,35 @@
 #include "algorithms.hpp"
+#include "program_options.hpp"
 #include <cassert>
+
+///////////////////////////////////////////////////////////////////////////////
+// Bounding Surfaces
+///////////////////////////////////////////////////////////////////////////////
 
 static double EXTRA = 1e-5;
 
 // find the minimum bounding sphere (fmbs) of the first k points, using the given boundary points
 static BoundingSphere fmbsq(size_t k, const vector<Point3D> & points, const vector<Point3D> & in_boundary);
+
+// find the minimum bounding sphere of the given boundary points
 static BoundingSphere fmbsb(const vector<Point3D> & boundary);
+
+// find a point on two planes
 static Point3D on_both_planes(const Point3D & p1, const Vector3D & n1, const Point3D & p2, const Vector3D & n2);
 
+// find the weighted bounding sphere
 static BoundingSphere fwcs(const vector<Point3D> & points);
 
-BoundingSphere find_minimal_bounding_sphere(const vector<Point3D> & points) {
-  BoundingSphere ret = fmbsq(points.size(), points, vector<Point3D>());
+///////////////////////////////////////
 
-  //BoundingSphere ret = fwcs(points);
-  //cout << ret.radius << endl;
+BoundingSphere find_bounding_sphere(const vector<Point3D> & points) {
+  BoundingSphere ret;
+
+  if (cmd_options().count("average-origin-spheres")) {
+    ret = fwcs(points);
+  } else { // normal case
+    ret = fmbsq(points.size(), points, vector<Point3D>());
+  }
 
   // sanity check
   for (vector<Point3D>::const_iterator it = points.begin(); it != points.end(); ++it) {
@@ -23,6 +38,8 @@ BoundingSphere find_minimal_bounding_sphere(const vector<Point3D> & points) {
 
   return ret;
 }
+
+///////////////////////////////////////
 
 BoundingSphere fmbsq(size_t k, const vector<Point3D> & points, const vector<Point3D> & in_boundary) {
   // base case
@@ -98,22 +115,15 @@ BoundingSphere fmbsb(const vector<Point3D> & boundary) {
     } break;
   }
 
+  // sanity check
   for (vector<Point3D>::const_iterator it = boundary.begin(); it != boundary.end(); ++it) {
-    /*Vector3D delta = *it - ret.origin;
-    if (delta.length() > ret.radius) {
-      cout << "boundary pt = " << *it << "\n"
-           << "origin      = " << ret.origin << "\n"
-           << "radius      = " << ret.radius << "\n"
-           << "delta       = " << delta.length() << "\n"
-           << "difference  = " << (delta.length() - ret.radius) << "\n"
-           << "elems       = " << boundary.size() << "\n"
-           << endl;
-    }*/
     assert((*it - ret.origin).length2() <= ret.radius*ret.radius);
   }
 
   return ret;
 }
+
+///////////////////////////////////////
 
 Point3D on_both_planes(const Point3D & p1, const Vector3D & n1, const Point3D & p2, const Vector3D & n2) {
   // intersection's direction
@@ -134,7 +144,8 @@ Point3D on_both_planes(const Point3D & p1, const Vector3D & n1, const Point3D & 
   return ret;
 }
 
-// weighted center
+///////////////////////////////////////
+
 BoundingSphere fwcs(const vector<Point3D> & points) {
   Vector3D acc(0,0,0);
   for (vector<Point3D>::const_iterator it = points.begin(); it != points.end(); ++it) {

@@ -9,7 +9,7 @@ using namespace std;
            const std::vector< std::vector<int> >& faces)
   : m_verts(verts),
     m_faces(faces) {}*/
-
+/*
 Intersection Mesh::intersect(const Point3D & origin, const Vector3D & uray) const {
   // TODO: OPTIMIZE
   Intersection closest;
@@ -74,9 +74,9 @@ Intersection Mesh::intersect(const Point3D & origin, const Vector3D & uray) cons
 }
 
 BoundingSphere Mesh::get_bounds() const {
-  return find_minimal_bounding_sphere(m_verts);
+  return find_bounding_sphere(m_verts);
 }
-
+*/
 /*double Mesh::get_bounding_radius() const {
   double max_distance = 0;
   for (vector<Point3D>::const_iterator it = m_verts.begin(); it != m_verts.end(); ++it) {
@@ -84,7 +84,7 @@ BoundingSphere Mesh::get_bounds() const {
   }
   return max_distance;
 }*/
-
+/*
 std::ostream& operator<<(std::ostream& out, const Mesh& mesh)
 {
   std::cerr << "mesh({";
@@ -106,3 +106,4 @@ std::ostream& operator<<(std::ostream& out, const Mesh& mesh)
   std::cerr << "});" << std::endl;
   return out;
 }
+*/

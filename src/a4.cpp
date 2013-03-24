@@ -83,6 +83,7 @@ void a4_render(// What to render
 
   /////////////////////////////////////
   // Save the image.
+
   if (cmd_options().count("altfile")) {
     img.savePng(filename);
   } else {

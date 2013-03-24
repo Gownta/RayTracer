@@ -11,7 +11,7 @@ struct BoundingSphere {
   Point3D origin;
 };
 
-BoundingSphere find_minimal_bounding_sphere(const vector<Point3D> & points);
+BoundingSphere find_bounding_sphere(const vector<Point3D> & points);
 
 // return transformation matrices for various simple transformations
 Matrix4x4 rotation(double angle, char axis);

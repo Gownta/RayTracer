@@ -18,18 +18,15 @@ void read_options(int argc, char ** argv) {
       // main
       ("help,h", "Display help message.")
 
-      // background
+      // image options
       ("background,b", po::value<int>()->default_value(2), "Background image selector.")
+      ("x-range,x", po::value<vector<int>>()->multitoken(), "Range of x-coordinates to draw.")
+      ("y-range,y", po::value<vector<int>>()->multitoken(), "Range of y-coordinates to draw.")
 
-      // render space
-      ("x-range,x", po::value<vector<int>>()->multitoken(), "Range of x-coordinates to draw")
-      ("y-range,y", po::value<vector<int>>()->multitoken(), "Range of y-coordinates to draw")
-
-      // render location
-      ("altfile,F", "Output the png to the render file instead of scene.png")
-
-      // render style
-      ("reverse,R", "Reverse the order of matrix composition")
+      // program options
+      ("altfile,F", "Output the png to the render file instead of scene.png.")
+      ("reverse,R", "Reverse the order of matrix composition.")
+      ("average-origin-spheres", "Use average-origin spheres to construct bounding regions.")
   ;
 
   // positional options
