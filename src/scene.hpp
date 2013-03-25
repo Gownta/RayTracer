@@ -117,34 +117,29 @@ protected:
 // CSG Combiner
 
 class CSGNode : public SceneNode {
+public:
   enum Op {
     UNION,
     INTERSECTION,
     DIFFERENCE
   };
 
-  CSGNode(const std::string & name, SceneNode & p1, Op op, SceneNode & p2)
-      : SceneNode(name), m_p1(p1), m_op(op), m_p2(p2) {}
-  friend CSGNode operator+(SceneNode & p1, SceneNode & p2);
-  friend CSGNode operator*(SceneNode & p1, SceneNode & p2);
-  friend CSGNode operator-(SceneNode & p1, SceneNode & p2);
+  CSGNode(const std::string & name, SceneNode & p1, Op op, SceneNode & p2, double br)
+      : SceneNode(name), m_p1(p1), m_op(op), m_p2(p2) 
+    { m_bounds.origin = Point3D(0,0,0); m_bounds.radius = (br ? br : INFINITY); }
+ 
+  virtual int intersections(const Point3D & origin, const Vector3D & ray,
+                            IntersectionMode mode, Intersection where[]) const;
+  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
+  virtual void determine_bounds();
 
+private:
   SceneNode & m_p1;
   Op m_op;
   SceneNode & m_p2;
 
   BoundingSphere m_bounds;
-
-public:
-  virtual int intersections(const Point3D & origin, const Vector3D & ray,
-                            IntersectionMode mode, Intersection where[]) const;
-  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
-  virtual void determine_bounds();
 };
-
-CSGNode operator+(SceneNode & p1, SceneNode & p2);
-CSGNode operator*(SceneNode & p1, SceneNode & p2);
-CSGNode operator-(SceneNode & p1, SceneNode & p2);
 
 
 

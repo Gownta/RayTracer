@@ -271,8 +271,9 @@ int CSGNode::intersections(const Point3D & _origin, const Vector3D & _ray,
   int ret = idx3 - (k1 + k2);
   
   if (mode == EXISTENCE || mode == CLOSEST) {
-    // we should have short-circuited earlier
-    assert(false);
+    // we should have short-circuited earlier, unless ret is 0
+    assert(ret == 0);
+    return 0;
   }
 
   // mode == ALL
@@ -295,10 +296,10 @@ void CSGNode::determine_bounds() {
   m_p2.determine_bounds();
 }
 
-CSGNode operator+(SceneNode & p1, SceneNode & p2)
+/*CSGNode operator+(SceneNode & p1, SceneNode & p2)
   { return CSGNode(p1.get_name() + " + " + p2.get_name(), p1, CSGNode::UNION,        p2); }
 CSGNode operator*(SceneNode & p1, SceneNode & p2)
   { return CSGNode(p1.get_name() + " * " + p2.get_name(), p1, CSGNode::INTERSECTION, p2); }
 CSGNode operator-(SceneNode & p1, SceneNode & p2)
-  { return CSGNode(p1.get_name() + " - " + p2.get_name(), p1, CSGNode::DIFFERENCE,   p2); }
+  { return CSGNode(p1.get_name() + " - " + p2.get_name(), p1, CSGNode::DIFFERENCE,   p2); }*/
 

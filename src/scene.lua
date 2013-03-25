@@ -11,30 +11,23 @@ simples = {}
 D = 40
 S = 10
 
-require('dodeca')
-require('icosa')
+s1 = gr.sphere('s1')
+s1:translate( 0.5, 0, 0)
+s1:set_material(mat1)
+s2 = gr.sphere('s2')
+s2:translate(-0.5, 0, 0)
+s2:set_material(mat2)
 
-simples[1] = gr.sphere('sphere')
-simples[2] = gr.cube('cube')
-simples[3] = dodeca
-simples[4] = icosa
-simples[5] = gr.algebraic('torus', '(x^2 + y^2 + z^2 + 0.75^2 - 0.25^2)^2 - 4*0.75^2*(x^2 + y^2)', 0.75+0.25)
-simples[6] = gr.algebraic('limacon', '(x^2 + y^2 + z^2 - x)^2 - (x^2 + y^2 + z^2)', 2)
-simples[7] = gr.algebraic('lemniscate of Bernoulli', '(x^2 + y^2 + z^2)^2 - 2*(x^2 - y^2 - z^2)', 1.4143)
-simples[8] = gr.algebraic('lemniscate of Gerono', 'x^4 - x^2 + y^2 + z^2', 1)
-simples[9] = gr.algebraic('hippopede', '(x^2 + y^2 + z^2)^2 - 4*(x^2 + 0.2*(y^2 + z^2))', 2)
-simples[10]= gr.algebraic('deltoid', '(x^2 + y^2 + z^2)^2 + 18*(x^2 + y^2 + z^2) - 27 - 8*(x^3 - 3*x*(y^2 + z^2))', 3)
-                simples[10]:scale(0.3, 0.3, 0.3)
-simples[11]= gr.algebraic('bean', 'x^4 + x^2*(y^2 + z^2) + (y^2 + z^2)^2 - x*(x^2 + y^2 + z^2)', 2)
-simples[12]= gr.algebraic('bicuspid', '(x^2 - 1)*(x - 1)^2 + (y^2 + z^2 - 1)^2', 2)
-                simples[12]:rotate('Y', -90)
+simples[1] = gr.csg('bubble', s1, '+', s2, 2)
+simples[2] = gr.csg('bubble', s1, '*', s2, 2)
+simples[3] = gr.csg('bubble', s1, '-', s2, 2)
+
 n = table.getn(simples)
 
 for i = 1, n do
   elem = simples[i]
 
   elem:scale(S, S, S)
-  elem:set_material(mat1)
   
   displays = {}
   for j = 1, 4 do

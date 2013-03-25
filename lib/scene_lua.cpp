@@ -319,6 +319,43 @@ int gr_algebraic_cmd(lua_State* L)
   return 1;
 }
 
+// create a CSG
+extern "C"
+int gr_csg_cmd(lua_State* L)
+{
+  GRLUA_DEBUG_CALL;
+  
+  gr_node_ud* data = (gr_node_ud*)lua_newuserdata(L, sizeof(gr_node_ud));
+  data->node = 0;
+
+  const char* name = luaL_checkstring(L, 1);
+
+  gr_node_ud* pdata1 = (gr_node_ud*)luaL_checkudata(L, 2, "gr.node");
+  luaL_argcheck(L, pdata1 != 0, 2, "Node expected");
+  SceneNode * p1 = pdata1->node;
+
+  const char* _op = luaL_checkstring(L, 3);
+  string op(_op);
+  luaL_argcheck(L, op == "+" || op == "*" || op == "-", 3, "+, *, or - expected");
+  CSGNode::Op csgop;
+  if (op == "+") csgop = CSGNode::UNION;
+  if (op == "*") csgop = CSGNode::INTERSECTION;
+  if (op == "-") csgop = CSGNode::DIFFERENCE;
+
+  gr_node_ud* pdata2 = (gr_node_ud*)luaL_checkudata(L, 4, "gr.node");
+  luaL_argcheck(L, pdata2 != 0, 4, "Node expected");
+  SceneNode * p2 = pdata2->node;
+
+  double br = luaL_checknumber(L, 5);
+
+  data->node = new CSGNode(name, *p1, csgop, *p2, br);
+
+  luaL_getmetatable(L, "gr.node");
+  lua_setmetatable(L, -2);
+
+  return 1;
+}
+
 // Make a point light
 extern "C"
 int gr_light_cmd(lua_State* L)
@@ -626,6 +663,7 @@ static const luaL_reg grlib_functions[] = {
   {"nh_box", gr_nh_box_cmd},
   {"mesh", gr_mesh_cmd},
   {"algebraic", gr_algebraic_cmd},
+  {"csg", gr_csg_cmd},
   {"light", gr_light_cmd},
   {"render", gr_render_cmd},
   {0, 0}
