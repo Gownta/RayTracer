@@ -11,6 +11,7 @@
 using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
+// Node Base Class
 
 class SceneNode {
   /////////////////////////////////////
@@ -50,21 +51,19 @@ private:
 public:
   typedef vector<SceneNode*> ChildList;
 
-  void add_child(SceneNode * child) {
-    m_children.push_back(child);
-    child->m_parent = this;
-  }
+  void add_child(SceneNode * child) { m_children.push_back(child); }
 
   const ChildList & children() const { return m_children; }
   ChildList & children() { return m_children; }
 
 private:
-  SceneNode * m_parent;
   ChildList m_children;
 
   /////////////////////////////////////
   // intersection
 public:
+  virtual int intersections(const Point3D & origin, const Vector3D & ray,
+                            IntersectionMode mode, Intersection where[]) const;
   virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
   virtual void determine_bounds();
 
@@ -73,6 +72,7 @@ protected:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+// Joint Node
 
 class JointNode : public SceneNode {
 public:
@@ -90,6 +90,7 @@ protected:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+// Geometry Node
 
 class GeometryNode : public SceneNode {
 public:
@@ -101,6 +102,8 @@ public:
 
   void set_material(Material* material) { m_material = material; }
 
+  virtual int intersections(const Point3D & origin, const Vector3D & ray,
+                            IntersectionMode mode, Intersection where[]) const;
   virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
   virtual void determine_bounds();
 
@@ -111,6 +114,37 @@ protected:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+// CSG Combiner
+
+class CSGNode : public SceneNode {
+  enum Op {
+    UNION,
+    INTERSECTION,
+    DIFFERENCE
+  };
+
+  CSGNode(const std::string & name, SceneNode & p1, Op op, SceneNode & p2)
+      : SceneNode(name), m_p1(p1), m_op(op), m_p2(p2) {}
+  friend CSGNode operator+(SceneNode & p1, SceneNode & p2);
+  friend CSGNode operator*(SceneNode & p1, SceneNode & p2);
+  friend CSGNode operator-(SceneNode & p1, SceneNode & p2);
+
+  SceneNode & m_p1;
+  Op m_op;
+  SceneNode & m_p2;
+
+  BoundingSphere m_bounds;
+
+public:
+  virtual int intersections(const Point3D & origin, const Vector3D & ray,
+                            IntersectionMode mode, Intersection where[]) const;
+  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
+  virtual void determine_bounds();
+};
+
+CSGNode operator+(SceneNode & p1, SceneNode & p2);
+CSGNode operator*(SceneNode & p1, SceneNode & p2);
+CSGNode operator-(SceneNode & p1, SceneNode & p2);
 
 
 

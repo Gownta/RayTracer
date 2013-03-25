@@ -28,5 +28,11 @@ struct Intersection2 {
   bool operator<(const Intersection2 & other) const { return distance < other.distance; }
 };
 
+enum IntersectionMode {
+  EXISTENCE,
+  CLOSEST,
+  ALL
+};
+
 #endif  // INTERSECT_H
 
