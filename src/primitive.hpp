@@ -18,7 +18,6 @@ class Primitive {
 public:
   virtual ~Primitive() {}
 
-  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray) const = 0;
   virtual int intersections(const Point3D & origin, const Vector3D & ray,
                             IntersectionMode mode, Intersection where[]) const = 0;
   virtual BoundingSphere get_bounds() const = 0;
@@ -31,7 +30,6 @@ class Algebraic : public Primitive {
 public:
   Algebraic(const string & eq, double radius);
   
-  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray) const;
   virtual int intersections(const Point3D & origin, const Vector3D & ray,
                             IntersectionMode mode, Intersection where[]) const;
   virtual BoundingSphere get_bounds() const;
@@ -54,7 +52,6 @@ public:
        const std::vector<Face>& faces)
     : m_verts(verts), m_faces(faces) {}
 
-  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray) const;
   virtual int intersections(const Point3D & origin, const Vector3D & ray,
                             IntersectionMode mode, Intersection where[]) const;
   virtual BoundingSphere get_bounds() const;

@@ -92,33 +92,6 @@ int SceneNode::intersections(const Point3D & _origin, const Vector3D & _ray,
   return 1;
 }
 
-/*Intersection SceneNode::intersect(const Point3D & _origin, const Vector3D & _ray) {
-  Intersection candidates[128];
-
-  int k = intersections(_origin, _ray, CLOSEST, candidates);
-  if (k == 0) return Intersection();
-  assert(k == 1);
-  return candidates[0];
-*//*
-  Point3D origin = get_inverse() * _origin;
-  Vector3D ray   = get_inverse() * _ray;
-
-  Intersection closest;
-
-  for (ChildList::iterator it = m_children.begin(); it != m_children.end(); ++it) {
-    SceneNode & node = **it;
-    Intersection candidate = node.intersect(origin, ray);
-    if (candidate < closest) closest = candidate;
-  }
-
-  if (closest) {
-    closest.normal = (get_normtrans() * closest.normal).unit();
-  }
-
-  return closest;
-  */
-//}
-
 void SceneNode::determine_bounds() {
   for (ChildList::iterator it = m_children.begin(); it != m_children.end(); ++it) {
     SceneNode & node = **it;
@@ -156,55 +129,7 @@ int GeometryNode::intersections(const Point3D & _origin, const Vector3D & _ray,
   return ret;
 }
 
-/*Intersection GeometryNode::intersect(const Point3D & _origin, const Vector3D & _ray) {
-  Intersection candidates[128];
-
-  int k = intersections(_origin, _ray, CLOSEST, candidates);
-  if (k == 0) return Intersection();
-  assert(k == 1);
-  return candidates[0];
-  *//*
-  // perform the inverse transformation to get the ray from the primitives' perspective
-  Point3D origin = get_inverse() * _origin;
-  Vector3D ray   = get_inverse() * _ray;
-
-  *cout << get_name() << "\n";
-  cout << "_origin = " << _origin << "\n";
-  cout << " origin = " <<  origin << "\n";
-  cout << "   _ray = " << _ray << "\n";
-  cout << "    ray = " <<  ray << "\n";
-  cout << get_trans() << "\n";
-  cout << get_inverse() << "\n\n";
-*
-  // try to intersect with the bounding sphere first
-  Vector3D uray = ray.unit();
-  double closest_s = ((origin - m_bounds.origin) - ((origin - m_bounds.origin).dot(uray) * uray)).length2();
-  if (closest_s > m_bounds.radius * m_bounds.radius) return Intersection();
-
-  // intersect with the primitive
-  Intersection result;
-  if (1) {
-    result = m_primitive->intersect(origin, ray);
-  } else {
-    // draw the bounding region
-    //NonhierSphere nhs(m_bounds.origin, m_bounds.radius);
-    //result = nhs.intersect(origin, ray);
-  }
-
-  // need to set the material and adjust the normal
-  if (result) {
-    result.material = m_material;
-    result.normal = (get_normtrans() * result.normal).unit();
-    assert(result.normal.dot(_ray) < 0);
-    return result;
-  }
-
-  return Intersection();
-  */
-//}
-
 void GeometryNode::determine_bounds() {
-  //m_bounding_radius = m_primitive->get_bounding_radius();
   m_bounds = m_primitive->get_bounds();
 }
 
@@ -228,10 +153,14 @@ int CSGNode::intersections(const Point3D & _origin, const Vector3D & _ray,
   sort(where + k1, where + k1 + k2);
 
   // walk through the intersection points
-  // THESE THREE BOOLS ARE LIES!
-  bool in1 = false;
-  bool in2 = false;
-  bool old_inside = false;
+  bool in1 = (k1 % 2);
+  bool in2 = (k2 % 2);
+  bool old_inside;
+    switch (m_op) {
+      case UNION:        old_inside = in1 ||  in2; break;
+      case INTERSECTION: old_inside = in1 &&  in2; break;
+      case DIFFERENCE:   old_inside = in1 && !in2; break;
+    }
   int idx1 = 0;       // where are we in g1's sorted list
   int idx2 = k1;      // where are we in g2's sorted list
   int idx3 = k1 + k2; // where we are storing intersections to return
@@ -283,24 +212,8 @@ int CSGNode::intersections(const Point3D & _origin, const Vector3D & _ray,
   return ret;
 }
 
-/*Intersection CSGNode::intersect(const Point3D & origin, const Vector3D & ray) {
-  Intersection candidates[128];
-
-  int k = intersections(origin, ray, CLOSEST, candidates);
-  if (k == 0) return Intersection();
-  assert(k == 1);
-  return candidates[0];
-}*/
-
 void CSGNode::determine_bounds() {
   m_p1.determine_bounds();
   m_p2.determine_bounds();
 }
-
-/*CSGNode operator+(SceneNode & p1, SceneNode & p2)
-  { return CSGNode(p1.get_name() + " + " + p2.get_name(), p1, CSGNode::UNION,        p2); }
-CSGNode operator*(SceneNode & p1, SceneNode & p2)
-  { return CSGNode(p1.get_name() + " * " + p2.get_name(), p1, CSGNode::INTERSECTION, p2); }
-CSGNode operator-(SceneNode & p1, SceneNode & p2)
-  { return CSGNode(p1.get_name() + " - " + p2.get_name(), p1, CSGNode::DIFFERENCE,   p2); }*/
 

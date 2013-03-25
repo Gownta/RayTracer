@@ -10,7 +10,7 @@ int main(int argc, char ** argv) {
   if (cmd_options().count("help")) {
     cout << "\n     ===== RayTracer =====\n\n"
               "     Nicholas Ormrod (njormrod)\n"
-              "     CS 488, W12\n"
+              "     CS 488 A5, W12\n"
             "\n     =====================\n\n";
 
     cout << "Usage: rt [options] [filename]\n\n";

@@ -119,7 +119,7 @@ int gr_node_cmd(lua_State* L)
   return 1;
 }
 
-// Create a joint node
+/*// Create a joint node
 extern "C"
 int gr_joint_cmd(lua_State* L)
 {
@@ -144,7 +144,7 @@ int gr_joint_cmd(lua_State* L)
   lua_setmetatable(L, -2);
 
   return 1;
-}
+}*/
 
 // Create a sphere node
 extern "C"
@@ -653,7 +653,7 @@ int gr_node_gc_cmd(lua_State* L)
 static const luaL_reg grlib_functions[] = {
   {"node", gr_node_cmd},
   {"sphere", gr_sphere_cmd},
-  {"joint", gr_joint_cmd},
+  //{"joint", gr_joint_cmd},
   {"material", gr_material_cmd},
   {"optics_material", gr_optics_material_cmd},
   {"texture_material", gr_texture_material_cmd},

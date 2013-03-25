@@ -64,29 +64,9 @@ private:
 public:
   virtual int intersections(const Point3D & origin, const Vector3D & ray,
                             IntersectionMode mode, Intersection where[]) const;
-  //virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
   virtual void determine_bounds();
 
 protected:
-  //double m_bounding_radius;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-// Joint Node
-
-class JointNode : public SceneNode {
-public:
-  JointNode(const string & name) : SceneNode(name) {}
-
-  void set_joint_x(double min, double init, double max) {}
-  void set_joint_y(double min, double init, double max) {}
-
-  struct JointRange {
-    double min, init, max;
-  };
-
-protected:
-  JointRange m_joint_x, m_joint_y;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -104,7 +84,6 @@ public:
 
   virtual int intersections(const Point3D & origin, const Vector3D & ray,
                             IntersectionMode mode, Intersection where[]) const;
-  //virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
   virtual void determine_bounds();
 
 protected:
@@ -130,7 +109,6 @@ public:
  
   virtual int intersections(const Point3D & origin, const Vector3D & ray,
                             IntersectionMode mode, Intersection where[]) const;
-  //virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
   virtual void determine_bounds();
 
 private:
