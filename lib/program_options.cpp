@@ -25,7 +25,7 @@ void read_options(int argc, char ** argv) {
 
       // program options
       ("altfile,F", "Output the png to the render file instead of scene.png.")
-      ("reverse,R", "Reverse the order of matrix composition.")
+      ("reverse,R", "Use matrix post-order composition instead of pre-order.")
       ("average-origin-spheres", "Use average-origin spheres to construct bounding regions.")
   ;
 

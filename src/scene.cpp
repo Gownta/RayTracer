@@ -92,14 +92,14 @@ int SceneNode::intersections(const Point3D & _origin, const Vector3D & _ray,
   return 1;
 }
 
-Intersection SceneNode::intersect(const Point3D & _origin, const Vector3D & _ray) {
+/*Intersection SceneNode::intersect(const Point3D & _origin, const Vector3D & _ray) {
   Intersection candidates[128];
 
   int k = intersections(_origin, _ray, CLOSEST, candidates);
   if (k == 0) return Intersection();
   assert(k == 1);
   return candidates[0];
-/*
+*//*
   Point3D origin = get_inverse() * _origin;
   Vector3D ray   = get_inverse() * _ray;
 
@@ -117,7 +117,7 @@ Intersection SceneNode::intersect(const Point3D & _origin, const Vector3D & _ray
 
   return closest;
   */
-}
+//}
 
 void SceneNode::determine_bounds() {
   for (ChildList::iterator it = m_children.begin(); it != m_children.end(); ++it) {
@@ -156,14 +156,14 @@ int GeometryNode::intersections(const Point3D & _origin, const Vector3D & _ray,
   return ret;
 }
 
-Intersection GeometryNode::intersect(const Point3D & _origin, const Vector3D & _ray) {
+/*Intersection GeometryNode::intersect(const Point3D & _origin, const Vector3D & _ray) {
   Intersection candidates[128];
 
   int k = intersections(_origin, _ray, CLOSEST, candidates);
   if (k == 0) return Intersection();
   assert(k == 1);
   return candidates[0];
-  /*
+  *//*
   // perform the inverse transformation to get the ray from the primitives' perspective
   Point3D origin = get_inverse() * _origin;
   Vector3D ray   = get_inverse() * _ray;
@@ -201,7 +201,7 @@ Intersection GeometryNode::intersect(const Point3D & _origin, const Vector3D & _
 
   return Intersection();
   */
-}
+//}
 
 void GeometryNode::determine_bounds() {
   //m_bounding_radius = m_primitive->get_bounding_radius();
@@ -228,6 +228,7 @@ int CSGNode::intersections(const Point3D & _origin, const Vector3D & _ray,
   sort(where + k1, where + k1 + k2);
 
   // walk through the intersection points
+  // THESE THREE BOOLS ARE LIES!
   bool in1 = false;
   bool in2 = false;
   bool old_inside = false;
@@ -282,14 +283,14 @@ int CSGNode::intersections(const Point3D & _origin, const Vector3D & _ray,
   return ret;
 }
 
-Intersection CSGNode::intersect(const Point3D & origin, const Vector3D & ray) {
+/*Intersection CSGNode::intersect(const Point3D & origin, const Vector3D & ray) {
   Intersection candidates[128];
 
   int k = intersections(origin, ray, CLOSEST, candidates);
   if (k == 0) return Intersection();
   assert(k == 1);
   return candidates[0];
-}
+}*/
 
 void CSGNode::determine_bounds() {
   m_p1.determine_bounds();

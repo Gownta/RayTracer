@@ -41,7 +41,12 @@ Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3
   assert(uray.is_unit());
 
   // for each object, try intersecting
-  Intersection closest = root->intersect(origin, uray);
+  //Intersection closest = root->intersect(origin, uray);
+  Intersection where[256];
+  int k = root->intersections(origin, uray, CLOSEST, where);
+  if (k == 0) return Intersection2();
+  assert(k == 1);
+  Intersection closest = where[0];
 
   // if an intersection has occurred, draw it
   if (closest) {
@@ -225,7 +230,12 @@ void get_geometry_nodes(vector<GeometryNode*> & ret, SceneNode * root) {
 bool light_is_visible(const Light & light, const Point3D & p) {
   Vector3D lv = light.position - p;
   Vector3D ul = lv.unit();
-  Intersection beam = ROOT->intersect(p, ul);
+  Intersection where[256];
+  int k = ROOT->intersections(p, ul, CLOSEST, where);
+  //Intersection beam = ROOT->intersect(p, ul);
+  if (k == 0) return 1;
+  assert(k == 1);
+  Intersection & beam = where[0];
   return beam.distance * beam.distance > lv.length2();
 }
 

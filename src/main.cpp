@@ -17,7 +17,7 @@ int main(int argc, char ** argv) {
 
     print_options();
 
-    return 0;
+    return 1;
   }
 
   // Execute the lua scene.

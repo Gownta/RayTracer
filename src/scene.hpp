@@ -64,7 +64,7 @@ private:
 public:
   virtual int intersections(const Point3D & origin, const Vector3D & ray,
                             IntersectionMode mode, Intersection where[]) const;
-  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
+  //virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
   virtual void determine_bounds();
 
 protected:
@@ -104,7 +104,7 @@ public:
 
   virtual int intersections(const Point3D & origin, const Vector3D & ray,
                             IntersectionMode mode, Intersection where[]) const;
-  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
+  //virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
   virtual void determine_bounds();
 
 protected:
@@ -130,7 +130,7 @@ public:
  
   virtual int intersections(const Point3D & origin, const Vector3D & ray,
                             IntersectionMode mode, Intersection where[]) const;
-  virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
+  //virtual Intersection intersect(const Point3D & origin, const Vector3D & ray);
   virtual void determine_bounds();
 
 private:
