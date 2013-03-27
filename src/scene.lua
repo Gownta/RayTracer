@@ -49,9 +49,46 @@ s2 = gr.sphere('s2')
 s2:translate(-0.5, 0, 0)
 s2:set_material(mat3)
 
-simples[1] = gr.csg('bubble', s1, '+', s2, 2)
+ic = gr.algebraic('infinite cylinder', 'x^2 + z^2 - 1', 2)
+ic:set_material(mat1)
+bp = gr.algebraic('biplane', 'y^2 - 1', 2)
+bp:set_material(mat3)
+cylinder = gr.csg('cylinder', ic, '*', bp, 1.42)
+
+cy = gr.node('cy')
+cy:add_child(cylinder)
+cy:scale(0.5, 1, 0.5)
+
+cx = gr.node('cx')
+cx:add_child(cylinder)
+cx:rotate('Z', 90)
+cx:scale(1, 0.5, 0.5)
+
+cz = gr.node('cz')
+cz:add_child(cylinder)
+cz:rotate('X', 90)
+cz:scale(0.5, 0.5, 1)
+
+tt1 = gr.csg('tt1', cy, '+', cx, 1.42)
+tt = gr.csg('tt', tt1, '+', cz, 1.42)
+
+c2 = gr.cube('cube')
+c2:scale(1.9,1.9,1.9)
+c2:translate(-1,-1,-1)
+c2:set_material(mat2)
+
+fs = gr.csg('funny shape', c2, '-', tt, 1.731)
+
+--simples[1] = tt
+--simples[2] = c2
+simples[1] = fs
+
+
+--[[simples[1] = gr.csg('bubble', s1, '+', s2, 2)
 simples[2] = gr.csg('bubble', s1, '*', s2, 2)
 simples[3] = gr.csg('bubble', s1, '-', s2, 2)
+simples[4] = gr.csg('cylinder', ic, '*', bp, 1.42)
+--]]
 
 n = table.getn(simples)
 

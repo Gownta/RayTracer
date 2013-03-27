@@ -28,7 +28,7 @@ public:
 
 class Algebraic : public Primitive {
 public:
-  Algebraic(const string & eq, double radius);
+  Algebraic(const string & eqn, double radius);
   
   virtual int intersections(const Point3D & origin, const Vector3D & ray,
                             IntersectionMode mode, Intersection where[]) const;

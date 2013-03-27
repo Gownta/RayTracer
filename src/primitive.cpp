@@ -14,12 +14,14 @@ Algebraic::Algebraic(const string & eqn, double radius)
     , m_deg(0)
     , m_br(radius)
 {
+  // determine the algebraic's degree
   for (const auto & f : m_eqn) {
     m_deg = max(m_deg, f.pow_t);
   }
 
+  // parse the equation without expanding w -> (o_x + t * r_w)
+  // use this equation to compute the partial derivatives
   auto unex = parse_equation(eqn, false);
-
   for (const auto & f : unex) {
     if (f.pow_x > 0) {
       m_dx.push_back(f);
@@ -57,7 +59,6 @@ int Algebraic::intersections(const Point3D & _origin, const Vector3D & ray,
                   * pow(ray[0], f.pow_rx)
                   * pow(ray[1], f.pow_ry)
                   * pow(ray[2], f.pow_rz);
-                
   }
 
   // find the roots
@@ -68,9 +69,9 @@ int Algebraic::intersections(const Point3D & _origin, const Vector3D & ray,
     case 4: num_roots = quarticRoots  (c[3] / c[4], c[2]/c[4], c[1]/c[4], c[0]/c[4], roots); break;
     case 3: num_roots = cubicRoots    (c[2] / c[3], c[1]/c[3], c[0]/c[3], roots); break;
     case 2: num_roots = quadraticRoots(c[2], c[1], c[0], roots); break;
-    case 1: num_roots = 1; roots[0] = -c[0] / c[1]; break;
+    //case 1: num_roots = 1; roots[0] = -c[0] / c[1]; break;
     default: 
-      cout << m_deg << endl;
+      cout << "\n" << m_deg << endl;
       assert(false);
   }
 
@@ -218,28 +219,6 @@ BoundingSphere Mesh::get_bounds() const {
   return find_bounding_sphere(m_verts);
 }
 
-std::ostream& operator<<(std::ostream& out, const Mesh& mesh)
-{
-  std::cerr << "mesh({";
-  for (std::vector<Point3D>::const_iterator I = mesh.m_verts.begin(); I != mesh.m_verts.end(); ++I) {
-    if (I != mesh.m_verts.begin()) std::cerr << ",\n      ";
-    std::cerr << *I;
-  }
-  std::cerr << "},\n\n     {";
-  
-  for (std::vector<Mesh::Face>::const_iterator I = mesh.m_faces.begin(); I != mesh.m_faces.end(); ++I) {
-    if (I != mesh.m_faces.begin()) std::cerr << ",\n      ";
-    std::cerr << "[";
-    for (Mesh::Face::const_iterator J = I->begin(); J != I->end(); ++J) {
-      if (J != I->begin()) std::cerr << ", ";
-      std::cerr << *J;
-    }
-    std::cerr << "]";
-  }
-  std::cerr << "});" << std::endl;
-  return out;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Instatiations
 
@@ -269,5 +248,30 @@ Cube::Cube() : Mesh(vector<Point3D>(), vector<Face>()) {
     assert(f.size() == 4);
     m_faces.push_back(f);
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// printing
+
+std::ostream& operator<<(std::ostream& out, const Mesh& mesh)
+{
+  std::cerr << "mesh({";
+  for (std::vector<Point3D>::const_iterator I = mesh.m_verts.begin(); I != mesh.m_verts.end(); ++I) {
+    if (I != mesh.m_verts.begin()) std::cerr << ",\n      ";
+    std::cerr << *I;
+  }
+  std::cerr << "},\n\n     {";
+  
+  for (std::vector<Mesh::Face>::const_iterator I = mesh.m_faces.begin(); I != mesh.m_faces.end(); ++I) {
+    if (I != mesh.m_faces.begin()) std::cerr << ",\n      ";
+    std::cerr << "[";
+    for (Mesh::Face::const_iterator J = I->begin(); J != I->end(); ++J) {
+      if (J != I->begin()) std::cerr << ", ";
+      std::cerr << *J;
+    }
+    std::cerr << "]";
+  }
+  std::cerr << "});" << std::endl;
+  return out;
 }
 

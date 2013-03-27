@@ -1,0 +1,10 @@
+====
+TODO
+
+in primitives.cpp, make a better pow function (since I will only be calling it for powers of 0..4)
+
+===========
+ASSUMPTIONS
+
+All primitives are simple and closed. This means we can use the Jordan Curve Theorem to determine if we are inside or outside.
+

@@ -42,7 +42,8 @@ Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3
 
   // for each object, try intersecting
   Intersection where[256];
-  int k = root->intersections(origin, uray, CLOSEST, where);
+  //int k = root->intersections(origin, uray, CLOSEST, where);
+  int k = root->intersect(origin, uray, CLOSEST, where);
   if (k == 0) return Intersection2();
   assert(k == 1);
   Intersection closest = where[0];
@@ -230,7 +231,8 @@ bool light_is_visible(const Light & light, const Point3D & p) {
   Vector3D lv = light.position - p;
   Vector3D ul = lv.unit();
   Intersection where[256];
-  int k = ROOT->intersections(p, ul, CLOSEST, where);
+  //int k = ROOT->intersections(p, ul, CLOSEST, where);
+  int k = ROOT->intersect(p, ul, CLOSEST, where);
   if (k == 0) return 1;
   assert(k == 1);
   Intersection & beam = where[0];

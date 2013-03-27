@@ -356,6 +356,26 @@ int gr_csg_cmd(lua_State* L)
   return 1;
 }
 
+/*// create a cylinder
+extern "C"
+int gr_cylinder_cmd(lua_State* L)
+{
+  GRLUA_DEBUG_CALL;
+  
+  gr_node_ud* data = (gr_node_ud*)lua_newuserdata(L, sizeof(gr_node_ud));
+  data->node = 0;
+
+  const char* name = luaL_checkstring(L, 1);
+  
+  data->node = new Cylinder(name);
+
+  luaL_getmetatable(L, "gr.node");
+  lua_setmetatable(L, -2);
+
+  return 1;
+}*/
+
+
 // Make a point light
 extern "C"
 int gr_light_cmd(lua_State* L)
@@ -664,6 +684,7 @@ static const luaL_reg grlib_functions[] = {
   {"mesh", gr_mesh_cmd},
   {"algebraic", gr_algebraic_cmd},
   {"csg", gr_csg_cmd},
+  //{"cylinder", gr_cylinder_cmd},
   {"light", gr_light_cmd},
   {"render", gr_render_cmd},
   {0, 0}
