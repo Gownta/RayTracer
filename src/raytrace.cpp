@@ -4,6 +4,7 @@
 #include <cmath>
 #include "image.hpp"
 #include <map>
+#include "program_options.hpp"
 
 using namespace std;
 
@@ -228,6 +229,7 @@ void get_geometry_nodes(vector<GeometryNode*> & ret, SceneNode * root) {
 }
 
 bool light_is_visible(const Light & light, const Point3D & p) {
+  if (cmd_options().count("no-shadows")) return true;
   Vector3D lv = light.position - p;
   Vector3D ul = lv.unit();
   Intersection where[256];

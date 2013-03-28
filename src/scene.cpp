@@ -139,10 +139,16 @@ int CSGNode::intersections(const Point3D & origin, const Vector3D & ray,
   sort(where, where + k1);
   sort(where + k1, where + k1 + k2);
 
+  /////////////////////////////////////
   // walk through the intersection points
+
+  // find out which shaped we are in
   bool in1 = (k1 % 2);
   bool in2 = (k2 % 2);
   bool ini = in(in1, in2);
+  if (Algebraic * a = dynamic_cast<Algebraic*>(&m_p1)) if (a->contains(origin + 1000*ray)) in1 = !in1;
+  if (Algebraic * a = dynamic_cast<Algebraic*>(&m_p2)) if (a->contains(origin + 1000*ray)) in2 = !in2;
+
   int idx1 = 0;       // where are we in p1's sorted list
   int idx2 = k1;      // where are we in p2's sorted list
   int idx3 = k1 + k2; // where we are storing intersections to return

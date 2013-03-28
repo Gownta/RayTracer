@@ -11,6 +11,7 @@ using namespace std;
 
 Algebraic::Algebraic(const string & eqn, double radius)
     : m_eqn(parse_equation(eqn, true))
+    , m_xyzq(parse_equation(eqn, false))
     , m_deg(0)
     , m_br(radius)
 {
@@ -41,13 +42,13 @@ Algebraic::Algebraic(const string & eqn, double radius)
   }
 }
 
-int Algebraic::intersections(const Point3D & _origin, const Vector3D & ray,
+int Algebraic::intersections(const Point3D & origin, const Vector3D & ray,
                              IntersectionMode mode, Intersection where[]) const {
-  // for numerical stability, bring the origin closer to the bounding volume
+  /*// for numerical stability, bring the origin closer to the bounding volume
   // add inct to distance before returning the point of intersection
   double inct = (Vector3D(_origin).length() - m_br) / ray.length();
   if (inct < 0) inct = 0;
-  Point3D origin = _origin + inct*ray;
+  Point3D origin = _origin + inct*ray;*/
 
   // compute the intersection polynomial
   double c[5] = { 0 };
@@ -113,7 +114,7 @@ int Algebraic::intersections(const Point3D & _origin, const Vector3D & ray,
       if (dot > 0) normal = -normal;
       
       // add this intersection point
-      where[ret].distance = root + inct;
+      where[ret].distance = root ;//+ inct;
       where[ret].normal = normal;
       ret++;
 
@@ -136,6 +137,18 @@ BoundingSphere Algebraic::get_bounds() const {
   ret.origin = Point3D(0,0,0);
   ret.radius = m_br + 1e-5;
   return ret;
+}
+
+bool Algebraic::contains(const Point3D & p) const {
+  double val = 0;
+  for (const auto & f : m_xyzq) {
+    double t = f.k
+               * pow(p[0], f.pow_x)
+               * pow(p[1], f.pow_y)
+               * pow(p[2], f.pow_z);
+    val += t;
+  }
+  return val <= 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -34,8 +34,11 @@ public:
                             IntersectionMode mode, Intersection where[]) const;
   virtual BoundingSphere get_bounds() const;
 
+  bool contains(const Point3D & p) const;
+
 private:
   vector<Factor> m_eqn;
+  vector<Factor> m_xyzq;
   vector<Factor> m_dx, m_dy, m_dz;
   int m_deg;
   double m_br;

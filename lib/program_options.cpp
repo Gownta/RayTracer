@@ -22,6 +22,7 @@ void read_options(int argc, char ** argv) {
       ("background,b", po::value<int>()->default_value(2), "Background image selector.")
       ("x-range,x", po::value<vector<int>>()->multitoken(), "Range of x-coordinates to draw.")
       ("y-range,y", po::value<vector<int>>()->multitoken(), "Range of y-coordinates to draw.")
+      ("no-shadows,S", "Disable shadows: all lights are assumed to hit every surface.")
 
       // program options
       ("altfile,F", "Output the png to the render file instead of scene.png.")
