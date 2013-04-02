@@ -7,6 +7,7 @@
 #include "background.hpp"
 #include "program_options.hpp"
 #include "zpic.hpp"
+#include "antialias.hpp"
 
 using namespace std;
 
@@ -70,7 +71,7 @@ void a4_render(// What to render
     double cx = (double)width / 2.0  - (x + 0.5);
     double cy = (double)height / 2.0 - (y + 0.5);
 
-    log_progress("rendering", (double)x / width);
+    //log_progress("rendering", (double)x / width);
 
     Vector3D ray = (Z + cx * fov_scale * X + cy * fov_scale * Y).unit();
     Intersection2 display = get_colour(root, eye, ray);
@@ -80,6 +81,18 @@ void a4_render(// What to render
       zimg(x, y).alpha  = 1;
       zimg(x, y).depth  = display.distance;
     }
+  }
+
+  /////////////////////////////////////
+  // Anti-Aliasing
+
+  bool needs_aliasing[x_max - x_min][y_max - y_min];
+  for (int x = x_min; x < x_max; ++x) for (int y = y_min; y < y_max; ++y) {
+    needs_aliasing[x - x_min][y - y_min] = aliasing(zimg, x, y, x_min, x_max, y_min, y_max);
+  }
+
+  for (int x = x_min; x < x_max; ++x) for (int y = y_min; y < y_max; ++y) {
+    if (needs_aliasing[x - x_min][y - y_min]) zimg(x,y).colour = Colour(1,0,0);
   }
 
   /////////////////////////////////////

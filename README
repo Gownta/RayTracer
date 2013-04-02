@@ -2,6 +2,7 @@
 TODO
 
 in primitives.cpp, make a better pow function (since I will only be calling it for powers of 0..4)
+change --help's 'Allowed Options' to 'Options'
 
 ===========
 ASSUMPTIONS
