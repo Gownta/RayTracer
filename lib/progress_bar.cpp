@@ -9,6 +9,9 @@
 using namespace std;
 
 static clock_t START;
+static string LAST_MESSAGE;
+static int    LAST_GREEN;
+static int    LAST_ELAPSED = -1;
 
 struct RUNNER {
   RUNNER() { START = clock(); }
@@ -23,6 +26,11 @@ void log_progress(const std::string & message, double progress) {
   static string b = "                                                                                ";
 
   int green = 80 * progress;
+
+  if (green == LAST_GREEN && message == LAST_MESSAGE && elapsed == LAST_ELAPSED) return;
+  LAST_GREEN = green;
+  if (message != LAST_MESSAGE) LAST_MESSAGE = message;
+  LAST_ELAPSED = elapsed;
   
   // Compute the progress bar message
   stringstream display;

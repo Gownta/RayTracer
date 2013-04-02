@@ -70,7 +70,7 @@ void a4_render(// What to render
     double cx = (double)width / 2.0  - (x + 0.5);
     double cy = (double)height / 2.0 - (y + 0.5);
 
-    if (y == 0) log_progress("rendering", (double)x / width);
+    log_progress("rendering", (double)x / width);
 
     Vector3D ray = (Z + cx * fov_scale * X + cy * fov_scale * Y).unit();
     Intersection2 display = get_colour(root, eye, ray);
