@@ -6,5 +6,4 @@ in primitives.cpp, make a better pow function (since I will only be calling it f
 ===========
 ASSUMPTIONS
 
-All primitives are simple and closed. This means we can use the Jordan Curve Theorem to determine if we are inside or outside.
-
+All meshes are closed shapes, so we may use Jordan Curve to determine if we are inside or outside.

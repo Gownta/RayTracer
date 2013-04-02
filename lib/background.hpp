@@ -1,9 +1,9 @@
 #ifndef GOWNTA_BACKGROUND_H
 #define GOWNTA_BACKGROUND_H
 
-#include "image.hpp"
+#include "zpic.hpp"
 
-void set_background(Image & img);
+void set_background(ZPic & zimg);
 
 #endif // GOWNTA_BACKGROUND_H
 

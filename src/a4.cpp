@@ -6,6 +6,7 @@
 #include "progress_bar.hpp"
 #include "background.hpp"
 #include "program_options.hpp"
+#include "zpic.hpp"
 
 using namespace std;
 
@@ -37,10 +38,10 @@ void a4_render(// What to render
   // find the field of view scaling factor
   // this factor is over the width of the image
   double fov_scale = tan((fov/2) * 2*M_PI / 360) / (width / 2);
-  
-  // Initialize the image. The 3 is for RGB.
-  Image img(width, height, 3);
-  set_background(img);
+
+  // Initialize the image.
+  ZPic zimg(width, height);
+  set_background(zimg);
 
   // determine which range of the image to render
   int x_min = 0;
@@ -75,19 +76,22 @@ void a4_render(// What to render
     Intersection2 display = get_colour(root, eye, ray);
 
     if (display) {
-      img(x, y, 0) = display.colour.R();
-      img(x, y, 1) = display.colour.G();
-      img(x, y, 2) = display.colour.B();
+      zimg(x, y).colour = display.colour;
+      zimg(x, y).alpha  = 1;
+      zimg(x, y).depth  = display.distance;
     }
   }
 
   /////////////////////////////////////
   // Save the image.
 
+  Image image(width, height, 3); // the 3 is for RGB
+  zimg.write(image);
+
   if (cmd_options().count("altfile")) {
-    img.savePng(filename);
+    image.savePng(filename);
   } else {
-    img.savePng("scene.png");
+    image.savePng("scene.png");
   }
 }
 
