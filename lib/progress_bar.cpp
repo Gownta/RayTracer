@@ -1,4 +1,5 @@
 #include "progress_bar.hpp"
+#include "program_options.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -8,18 +9,22 @@
 
 using namespace std;
 
-static clock_t START;
-static string LAST_MESSAGE;
-static int    LAST_GREEN;
-static int    LAST_ELAPSED = -1;
+static clock_t UNIVERSAL_START = -1;
+static clock_t LAST_START;
+static string  LAST_MESSAGE("garbage sjkghasdgjcgnfkj");
+static int     LAST_GREEN;
+static int     LAST_ELAPSED = -1;
 
-struct RUNNER {
-  RUNNER() { START = clock(); }
-  ~RUNNER() { cout << endl; }
-} runner;
+void log_progress(const std::string & message, double progress, bool local_time) {
+  if (message != LAST_MESSAGE) {
+    LAST_START = clock();
+    LAST_MESSAGE = message;
+    LAST_GREEN = -1;
 
-void log_progress(const std::string & message, double progress) {
-  int elapsed = (clock() - START) / CLOCKS_PER_SEC;
+    if (UNIVERSAL_START == -1) UNIVERSAL_START = LAST_START;
+  }
+
+  int elapsed = (clock() - (local_time ? LAST_START : UNIVERSAL_START)) / CLOCKS_PER_SEC;
   
   static string g("\x1b[1;;42m"); // green
   static string n("\x1b[0m");     // reset
@@ -27,9 +32,8 @@ void log_progress(const std::string & message, double progress) {
 
   int green = 80 * progress;
 
-  if (green == LAST_GREEN && message == LAST_MESSAGE && elapsed == LAST_ELAPSED) return;
+  if (green == LAST_GREEN && elapsed == LAST_ELAPSED) return;
   LAST_GREEN = green;
-  if (message != LAST_MESSAGE) LAST_MESSAGE = message;
   LAST_ELAPSED = elapsed;
   
   // Compute the progress bar message
@@ -51,7 +55,7 @@ void log_progress(const std::string & message, double progress) {
     time << seconds;
   }
 
-  display << setw(8) << right << time.str() << "s";
+  display << setw(8) << right << time.str() << "s" << " ";
   string ds = display.str();
 
   // display
@@ -60,5 +64,11 @@ void log_progress(const std::string & message, double progress) {
   cout << n << ds.substr(green);
   cout << "\r";
   cout << flush;
+}
+
+void complete_progress(const string & msg) {
+  LAST_GREEN = -1;
+  log_progress(msg, 1, true);
+  cout << endl;
 }
 

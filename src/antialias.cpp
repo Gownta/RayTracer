@@ -27,9 +27,6 @@ bool aliasing(const ZPic & zimg, int x, int y, int x_min, int x_max, int y_min, 
     weight += 4;
   }
 
-  //cout << "aliasing(" << x << "," << y << ") = " << (var / weight ) << "\n";  
-
-  //return false;
   return (var / weight) > cutoff;
 }
 
