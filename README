@@ -3,6 +3,7 @@ TODO
 
 in primitives.cpp, make a better pow function (since I will only be calling it for powers of 0..4)
 change --help's 'Allowed Options' to 'Options'
+cast 4 rays per pixel - if they do not all yield the same colour, then anti-alias
 
 ===========
 ASSUMPTIONS

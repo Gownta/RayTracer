@@ -31,6 +31,7 @@ void log_progress(const std::string & message, double progress, bool local_time)
   static string b = "                                                                                ";
 
   int green = 80 * progress;
+  assert(0 <= green && green <= 80);
 
   if (green == LAST_GREEN && elapsed == LAST_ELAPSED) return;
   LAST_GREEN = green;
@@ -55,8 +56,9 @@ void log_progress(const std::string & message, double progress, bool local_time)
     time << seconds;
   }
 
-  display << setw(8) << right << time.str() << "s" << " ";
+  display << setw(8) << right << time.str() << "s" << "  ";
   string ds = display.str();
+  assert(ds.length() > 80);
 
   // display
   cout << b << "\r";
@@ -70,5 +72,9 @@ void complete_progress(const string & msg) {
   LAST_GREEN = -1;
   log_progress(msg, 1, true);
   cout << endl;
+}
+
+void wipe_line() {
+  cout << "                                                                                 \r";
 }
 

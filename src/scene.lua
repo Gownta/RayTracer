@@ -106,11 +106,11 @@ cone = gr.csg('cone', ci, '*', hp, 1)
 --
 
 simples[1] = fss
---[[simples[2] = cone
+simples[2] = cone
 simples[3] = gr.csg('bubble', s1, '+', s2, 2)
 simples[4] = gr.csg('bubble', s1, '*', s2, 2)
 simples[5] = gr.csg('bubble', s1, '-', s2, 2)
-simples[6] = cyl--]]
+simples[6] = cyl
 
 
 n = table.getn(simples)

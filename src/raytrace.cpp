@@ -5,16 +5,32 @@
 #include "image.hpp"
 #include <map>
 #include "program_options.hpp"
+#include "progress_bar.hpp"
 
 using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 // static setup
 
-static Colour AMBIENT;
-static vector<Light*> LIGHTS;
 static SceneNode * ROOT;
 static vector<GeometryNode*> OBJECTS;
+
+static Point3D EYE;
+
+static Colour AMBIENT;
+static vector<Light*> LIGHTS;
+
+static int WIDTH;
+static int HEIGHT;
+static int X_MIN;
+static int X_MAX;
+static int Y_MIN;
+static int Y_MAX;
+
+static UnitVector3D X(Vector3D(1,0,0)); // garbage initialization required
+static UnitVector3D Y(Vector3D(0,1,0));
+static UnitVector3D Z(Vector3D(0,0,1));
+static double FOV_SCALE;
 
 static map<string, Image*> TEXTURES;
 
@@ -25,17 +41,71 @@ void get_geometry_nodes(vector<GeometryNode*> & ret, SceneNode * root);
 bool light_is_visible(const Light & light, const Point3D & p);
 Colour get_texture(const string & file, double x, double y);
 
-///////////////////////////////////////////////////////////////////////////////
-// main functions
+static UnitVector3D cast_ray(int x, int y, double dx, double dy);
 
-void setup(SceneNode * root, const Colour & ambient, const std::list<Light*> & lights) {
+///////////////////////////////////////////////////////////////////////////////
+// setup
+
+void setup(SceneNode * root, const Point3D & eye,
+           const Colour & ambient, const std::list<Light*> & lights,
+           int width, int height, int x_min, int x_max, int y_min, int y_max,
+           UnitVector3D x, UnitVector3D y, UnitVector3D z, double fov_scale
+          ) {
+  ROOT = root;
+  root->determine_bounds();
+  get_geometry_nodes(OBJECTS, root);
+
+  EYE = eye;
+
   AMBIENT = ambient;
   LIGHTS.assign(lights.begin(), lights.end());
 
-  ROOT = root;
-  get_geometry_nodes(OBJECTS, root);
+  WIDTH = width;
+  HEIGHT = height;
+  X_MIN = x_min;
+  X_MAX = x_max;
+  Y_MIN = y_min;
+  Y_MAX = y_max;
 
-  root->determine_bounds();
+  X = x;
+  Y = y;
+  Z = z;
+  FOV_SCALE = fov_scale;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Raytrace
+
+void raytrace(ZPic & zimg) {
+  int depth = zimg.depth();
+  for (int x = X_MIN; x < X_MAX; ++x) for (int y = Y_MIN; y < Y_MAX; ++y) for (int k = 0; k < depth; ++k) {
+    if (y == 0) log_progress("rendering", (double)(x - X_MIN) / (X_MAX - X_MIN));
+
+    auto & data = zimg(x, y, k);
+    if (data.depth == 0) continue;
+
+    auto ray = cast_ray(x, y, data.dx, data.dy);
+    Intersection2 display = get_colour(ROOT, EYE, ray);
+
+    if (display) {
+      data.colour = display.colour;
+      data.alpha  = 1;
+      data.depth  = display.distance;
+    }
+  }
+  complete_progress("rendering");
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Main functions.
+
+static UnitVector3D cast_ray(int x, int y, double dx, double dy) {
+  // compute the ray direction for pixel (x,y)
+  // note that the pixels on screen have (0,0) in the top-left, which is in the first quadrant wrt axes X and Y
+  double cx = (double)WIDTH  / 2.0 - x + dx;
+  double cy = (double)HEIGHT / 2.0 - y + dy;
+  Vector3D ray = Z + cx * FOV_SCALE * X + cy * FOV_SCALE * Y;
+  return ray;
 }
 
 Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3D & uray, double index) {
@@ -233,7 +303,6 @@ bool light_is_visible(const Light & light, const Point3D & p) {
   Vector3D lv = light.position - p;
   Vector3D ul = lv.unit();
   Intersection where[256];
-  //int k = ROOT->intersections(p, ul, CLOSEST, where);
   int k = ROOT->intersect(p, ul, CLOSEST, where);
   if (k == 0) return 1;
   assert(k == 1);

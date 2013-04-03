@@ -3,6 +3,7 @@
 
 #include <string>
 
+void wipe_line();
 void log_progress(const std::string & message, double progress, bool local_time = false);
 void complete_progress(const std::string & message);
 
