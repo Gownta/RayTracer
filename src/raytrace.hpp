@@ -16,7 +16,7 @@ void setup(SceneNode * root, const Point3D & eye,
 
 void raytrace(ZPic & zimg);
 
-Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3D & uray, double index_of_refraction = 0.0);
+//Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3D & uray, double index_of_refraction = 0.0);
 
 #endif // RAYTRACE_H
 

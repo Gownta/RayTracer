@@ -3,7 +3,7 @@
 
 using namespace std;
 
-static po::options_description desc("Allowed options");
+static po::options_description desc("RayTracer Options");
 static po::variables_map vm;
 
 po::variables_map & cmd_options() {
@@ -35,6 +35,7 @@ void read_options(int argc, char ** argv) {
       ("altfile,F", "Output the png to the render file instead of scene.png.")
       ("reverse,R", "Use matrix post-order composition instead of pre-order.")
       ("average-origin-spheres", "Use average-origin spheres to construct bounding regions.")
+      ("quiet,Q", "Disable progress bars.")
   ;
 
   // positional options

@@ -118,7 +118,6 @@ int Algebraic::intersections(const Point3D & origin, const Vector3D & ray,
       where[ret].normal = normal;
       ret++;
 
-      //closest = min(closest, root);
       assert(mode != CLOSEST || root < closest);
       closest = root;
     }

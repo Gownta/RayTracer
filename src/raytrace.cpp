@@ -37,10 +37,11 @@ static map<string, Image*> TEXTURES;
 ///////////////////////////////////////////////////////////////////////////////
 // headers
 
-void get_geometry_nodes(vector<GeometryNode*> & ret, SceneNode * root);
-bool light_is_visible(const Light & light, const Point3D & p);
-Colour get_texture(const string & file, double x, double y);
-
+static Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3D & uray,
+                                double index_of_refraction = 1.0);
+static void get_geometry_nodes(vector<GeometryNode*> & ret, SceneNode * root);
+static bool light_is_visible(const Light & light, const Point3D & p);
+static Colour get_texture(const string & file, double x, double y);
 static UnitVector3D cast_ray(int x, int y, double dx, double dy);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -99,21 +100,11 @@ void raytrace(ZPic & zimg) {
 ///////////////////////////////////////////////////////////////////////////////
 // Main functions.
 
-static UnitVector3D cast_ray(int x, int y, double dx, double dy) {
-  // compute the ray direction for pixel (x,y)
-  // note that the pixels on screen have (0,0) in the top-left, which is in the first quadrant wrt axes X and Y
-  double cx = (double)WIDTH  / 2.0 - x + dx;
-  double cy = (double)HEIGHT / 2.0 - y + dy;
-  Vector3D ray = Z + cx * FOV_SCALE * X + cy * FOV_SCALE * Y;
-  return ray;
-}
-
 Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3D & uray, double index) {
   assert(uray.is_unit());
 
-  // for each object, try intersecting
+  // get the closest point of intersection
   Intersection where[256];
-  //int k = root->intersections(origin, uray, CLOSEST, where);
   int k = root->intersect(origin, uray, CLOSEST, where);
   if (k == 0) return Intersection2();
   assert(k == 1);
@@ -300,6 +291,7 @@ void get_geometry_nodes(vector<GeometryNode*> & ret, SceneNode * root) {
 
 bool light_is_visible(const Light & light, const Point3D & p) {
   if (cmd_options().count("no-shadows")) return true;
+
   Vector3D lv = light.position - p;
   Vector3D ul = lv.unit();
   Intersection where[256];
@@ -328,5 +320,14 @@ Colour get_texture(const string & file, double x, double y) {
              img(posx, posy, 2));
 
   return ret;
+}
+
+static UnitVector3D cast_ray(int x, int y, double dx, double dy) {
+  // compute the ray direction for pixel (x,y)
+  // note that the pixels on screen have (0,0) in the top-left, which is in the first quadrant wrt axes X and Y
+  double cx = (double)WIDTH  / 2.0 - x + dx;
+  double cy = (double)HEIGHT / 2.0 - y + dy;
+  Vector3D ray = Z + cx * FOV_SCALE * X + cy * FOV_SCALE * Y;
+  return ray;
 }
 

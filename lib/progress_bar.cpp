@@ -16,6 +16,7 @@ static int     LAST_GREEN;
 static int     LAST_ELAPSED = -1;
 
 void log_progress(const std::string & message, double progress, bool local_time) {
+  if (cmd_options().count("quiet")) return;
   if (message != LAST_MESSAGE) {
     LAST_START = clock();
     LAST_MESSAGE = message;
@@ -69,12 +70,14 @@ void log_progress(const std::string & message, double progress, bool local_time)
 }
 
 void complete_progress(const string & msg) {
+  if (cmd_options().count("quiet")) return;
   LAST_GREEN = -1;
   log_progress(msg, 1, true);
   cout << endl;
 }
 
 void wipe_line() {
+  if (cmd_options().count("quiet")) return;
   cout << "                                                                                 \r";
 }
 

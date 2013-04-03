@@ -456,6 +456,7 @@ extern "C"
 int gr_material_cmd(lua_State* L)
 {
   GRLUA_DEBUG_CALL;
+  int nargs = lua_gettop(L);
   
   gr_material_ud* data = (gr_material_ud*)lua_newuserdata(L, sizeof(gr_material_ud));
   data->material = 0;
@@ -465,10 +466,15 @@ int gr_material_cmd(lua_State* L)
   get_tuple(L, 2, ks, 3);
 
   double shininess = luaL_checknumber(L, 3);
-  
+
+  double reflectivity = 0;
+  if (nargs > 3) {
+    reflectivity = luaL_checknumber(L, 4);
+  }
+
   data->material = new PhongMaterial(Colour(kd[0], kd[1], kd[2]),
                                      Colour(ks[0], ks[1], ks[2]),
-                                     shininess);
+                                     shininess, reflectivity);
 
   luaL_newmetatable(L, "gr.material");
   lua_setmetatable(L, -2);
@@ -479,13 +485,22 @@ int gr_material_cmd(lua_State* L)
 extern "C"
 int gr_optics_material_cmd(lua_State* L) {
   GRLUA_DEBUG_CALL;
+  int nargs = lua_gettop(L);
   
   gr_material_ud* data = (gr_material_ud*)lua_newuserdata(L, sizeof(gr_material_ud));
   data->material = 0;
   
   double idx = luaL_checknumber(L, 1);
+  double opacity = 0;
+  double k[3] = { 0 };
+  if (nargs > 1) {
+    opacity = luaL_checknumber(L, 2);
+  }
+  if (nargs > 2) {
+    get_tuple(L, 3, k, 3);
+  }
   
-  data->material = new OpticsMaterial(idx);
+  data->material = new OpticsMaterial(idx, opacity, Colour(k[0], k[1], k[2]));
 
   luaL_newmetatable(L, "gr.material");
   lua_setmetatable(L, -2);
