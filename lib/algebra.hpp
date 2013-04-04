@@ -82,6 +82,13 @@ struct Colour : public RTriple {
   double G() const { return v_[1]; }
   double B() const { return v_[2]; }
   virtual char get_prefix() const { return 'c'; }
+
+  Colour & operator+=(const Colour & o) {
+    v_[0] += o.v_[0];
+    v_[1] += o.v_[1];
+    v_[2] += o.v_[2];
+    return *this;
+  }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

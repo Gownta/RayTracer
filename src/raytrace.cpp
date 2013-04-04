@@ -34,15 +34,24 @@ static double FOV_SCALE;
 
 static map<string, Image*> TEXTURES;
 
+static int MAX_DEPTH;
+static double MIN_WEIGHT = 0.05;
+
 ///////////////////////////////////////////////////////////////////////////////
 // headers
 
 static Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3D & uray,
-                                double index_of_refraction = 1.0);
+                                double index_of_refraction = 1.0, double weight = 1, double depth = 0);
 static void get_geometry_nodes(vector<GeometryNode*> & ret, SceneNode * root);
 static bool light_is_visible(const Light & light, const Point3D & p);
 static Colour get_texture(const string & file, double x, double y);
+
 static UnitVector3D cast_ray(int x, int y, double dx, double dy);
+static Vector3D reflect(const Vector3D & incident, const Vector3D & normal);
+static Colour phong_light(const Point3D & at, const Vector3D & incident, const Vector3D & normal,
+                          const Colour & diffuse, const Colour & specular, double shininess);
+static double fresnel_reflection(double from_idx, double to_idx, const Vector3D & incident, const Vector3D & normal);
+static Vector3D refracted_ray(double from_idx, double to_idx, const Vector3D & incident, const Vector3D & normal);
 
 ///////////////////////////////////////////////////////////////////////////////
 // setup
@@ -72,6 +81,8 @@ void setup(SceneNode * root, const Point3D & eye,
   Y = y;
   Z = z;
   FOV_SCALE = fov_scale;
+
+  MAX_DEPTH = cmd_options()["max-depth"].as<int>();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -100,180 +111,73 @@ void raytrace(ZPic & zimg) {
 ///////////////////////////////////////////////////////////////////////////////
 // Main functions.
 
-Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3D & uray, double index) {
+Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3D & uray,
+                         double index, double weight, double depth) {
   assert(uray.is_unit());
 
+  /////////////////////////////////////
   // get the closest point of intersection
+
   Intersection where[256];
   int k = root->intersect(origin, uray, CLOSEST, where);
   if (k == 0) return Intersection2();
   assert(k == 1);
   Intersection closest = where[0];
+  assert(closest);
 
-  // if an intersection has occurred, draw it
-  if (closest) {
-    if (PhongMaterial * pm = dynamic_cast<PhongMaterial*>(closest.material)) {
-      // data we need
-      //  p : the point of intersection
-      //  un: surface normal at p
-      //  ul: vector from p to lightsource
-      //  i:  the intensity of the light
-      //  ur: the perfectly-reflected ray
-      // we also need to know if the light is visible from p
-      // we need to make sure we aren't going the wrong way
+  /////////////////////////////////////
+  // Process the point of intersection
 
-      // the point of intersection and surface normal
-      Point3D  p  = origin + closest.distance * uray;
-      Vector3D un = closest.normal;
-        assert(un.is_unit());
-        if (un.dot(-uray) < 0) {
-          cerr << "The normal indicates that the ray is looking at the back face of the object. Emergency flip.\n";
-          un = -un;
-        }
+  Point3D at          = origin + closest.distance * uray;
+  Vector3D normal     = closest.normal;
+    assert(normal.is_unit());
+    assert(normal.dot(uray) <= 0);
+  Vector3D reflected  = reflect(uray, normal);
 
-      // initialize the accumulator with the ambient term
-      Colour display = AMBIENT * pm->get_diffuse();
+  Colour display(0,0,0);
+  double reflectivity = 0;
 
-      // add each light's component to the accumulator
-      for (vector<Light*>::const_iterator lit = LIGHTS.begin(); lit != LIGHTS.end(); ++lit) {
-        const Light & light = **lit;
-
-        // unit vector to the light
-        Vector3D ul = (light.position - p).unit();
-
-        // skip this light if it does not hit p
-        if (ul.dot(un) < 0) {
-          /*cout << "behind surface\n";
-          cout << "  point:  " << p << "\n"
-               << "  normal: " << un << "\n"
-               << "  light:  " << ul << "\n"
-               << "  (dot):  " << ul.dot(un) << "\n";*/
-          continue; // the light is behind the surface
-        }
-        if (!light_is_visible(light, p)) {
-          //cout << "in shadow\n";
-          continue; // p is in shadow
-        }
-
-        // compute the intensity of the light
-        double i = light.intensity(sqrt((light.position - p).length()));
-
-        // the perfectly-reflected ray
-        Vector3D ur = 2 * ul.dot(un) * un - ul;
-
-        // accumulate the diffuse component
-        Colour diffuse = i * (ul.dot(un)) * pm->get_diffuse()  * light.colour;
-        display = display + diffuse;
-
-        // accumulate the specular component
-        // ignore the specular if the reflected light is in the wrong direction
-        double refdot = ur.dot(-uray);
-        if (refdot > 0) {
-          Colour specular = i * pow(refdot, pm->get_shininess()) * pm->get_specular() * light.colour;
-          display = display + specular;
-        }
-      }
-
-      // we have accumulated all light sources; return
-      Intersection2 ret;
-      ret.distance = closest.distance;
-      ret.colour = display;
-      return ret;
-    }
-    else if (TextureMaterial * tm = dynamic_cast<TextureMaterial*>(closest.material)) {
-      // data we need
-      //  p : the point of intersection
-      //  un: surface normal at p
-      //  ul: vector from p to lightsource
-      //  i:  the intensity of the light
-      //  ur: the perfectly-reflected ray
-      // we also need to know if the light is visible from p
-      // we need to make sure we aren't going the wrong way
-
-      // the point of intersection and surface normal
-      Point3D  p  = origin + closest.distance * uray;
-      Vector3D un = closest.normal;
-        assert(un.is_unit());
-        if (un.dot(-uray) < 0) {
-          cerr << "The normal indicates that the ray is looking at the back face of the object. Emergency flip.\n";
-          un = -un;
-        }
-
-      // the colour of the texture
-      Colour texture = get_texture(tm->get_texture_file(), closest.texture_pos[0], closest.texture_pos[1]);
-
-      // initialize the accumulator with the ambient term
-      Colour display = AMBIENT * texture;
-
-      // add each light's component to the accumulator
-      for (vector<Light*>::const_iterator lit = LIGHTS.begin(); lit != LIGHTS.end(); ++lit) {
-        const Light & light = **lit;
-
-        // unit vector to the light
-        Vector3D ul = (light.position - p).unit();
-
-        // skip this light if it does not hit p
-        if (ul.dot(un) < 0) {
-          continue; // the light is behind the surface
-        }
-        if (!light_is_visible(light, p)) {
-          continue; // p is in shadow
-        }
-
-        // compute the intensity of the light
-        double i = light.intensity(sqrt((light.position - p).length()));
-
-        // the perfectly-reflected ray
-        //Vector3D ur = 2 * ul.dot(un) * un - ul;
-
-        // accumulate the diffuse component
-        Colour diffuse = i * (ul.dot(un)) * texture * light.colour;
-        display = display + diffuse;
-      }
-
-      // we have accumulated all light sources; return
-      Intersection2 ret;
-      ret.distance = closest.distance;
-      ret.colour = display;
-      return ret;
-    }
-    /*else if (OpticsMaterial * om = dynamic_cast<OpticsMaterial*>(closest.material)) {
-      // the point of intersection and surface normal
-      Point3D  p  = origin + closest.distance * uray;
-      Vector3D un = closest.normal;
-        assert(un.is_unit());
-        if (un.dot(-uray) < 0) {
-          cerr << "The normal indicates that the ray is looking at the back face of the object. Emergency flip.\n";
-          un = -un;
-        }
-
-      // http://en.wikipedia.org/wiki/Snell's_law
-      double into_idx = om->get_index();
-      if (index == into_idx) into_idx = 1;
-
-      double n1o2 = into_idx / index;
-      double cos1 = un.dot(-uray);
-      double cos22 = 1 - n1o2*n1o2 * (1 - cos1*cos1);
-
-      Vector3D reflect = (uray + 2*cos1*un).unit();
+  // get the main colour and reflective component
+  if (PhongMaterial * pm = dynamic_cast<PhongMaterial*>(closest.material)) {
+    reflectivity = pm->get_reflectivity();
+    display = phong_light(at, uray, normal, pm->get_diffuse(), pm->get_specular(), pm->get_shininess());
+  } else if (TextureMaterial * tm = dynamic_cast<TextureMaterial*>(closest.material)) {
+    Colour texture = get_texture(tm->get_texture_file(), closest.texture_pos[0], closest.texture_pos[1]);
+    display = phong_light(at, uray, normal, texture, tm->get_specular() * texture, tm->get_shininess());
+  } else if (OpticsMaterial * om = dynamic_cast<OpticsMaterial*>(closest.material)) {
+    double idx = om->get_index();
+    if (idx == index) idx = 1; // we are leaving the object.
+    reflectivity = fresnel_reflection(index, idx, uray, normal);
+    if (reflectivity < 1) {
+      Vector3D refracted = refracted_ray(index, idx, uray, normal);
+      auto refraction = get_colour(ROOT, at, refracted.unit(), idx, weight * (1 - reflectivity), depth + 1);
       
-      if (cos22 >= 0) {
-        double cos2 = sqrt(cos22);
-        Vector3D refract = n1o2 * uray + (n1o2 * cos1 - cos2)*un;
-        return get_colour(root, p, refract, into_idx);
+      // some of the light is absorbed by the material
+      // http://en.wikipedia.org/wiki/Opacity_(optics)
+      double refr = 0;
+      if (refraction) {
+        refr = exp(om->get_opacity() * refraction.distance);
+        display = refraction.colour;
       }
-      else {
-        return get_colour(root, p, reflect);
-      }
-    }*/
-    else {
-      cerr << "Unrecognized material" << endl;
-      assert(false);
+      display = refr * display + (1 - refr) * om->get_colour();
     }
+  } else {
+    cerr << "Unrecognized material" << endl;
+    assert(false);
   }
 
-  // there was no intersection - return the default value
-  return Intersection2();
+  // add the reflective component
+  // skip if weight is too low or depth is too deep
+  assert(0 <= reflectivity && reflectivity <= 1);
+  if (weight > MIN_WEIGHT && depth < MAX_DEPTH && reflectivity > 0) {
+    auto reflection = get_colour(ROOT, at, reflected.unit(), index, weight * reflectivity, depth + 1);
+    if (reflection) display = reflectivity * reflection.colour + (1 - reflectivity) * display;
+  }
+
+  Intersection2 ret;
+  ret.distance = closest.distance;
+  ret.colour = display;
+  return ret;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -329,5 +233,92 @@ static UnitVector3D cast_ray(int x, int y, double dx, double dy) {
   double cy = (double)HEIGHT / 2.0 - y + dy;
   Vector3D ray = Z + cx * FOV_SCALE * X + cy * FOV_SCALE * Y;
   return ray;
+}
+
+Vector3D reflect(const Vector3D & incident, const Vector3D & normal) {
+  return incident - 2 * incident.dot(normal) * normal;
+}
+
+Colour phong_light(const Point3D & at, const Vector3D & incident, const Vector3D & normal,
+                   const Colour & diffuse, const Colour & specular, double shininess) {
+  assert(normal.is_unit());
+  assert(incident.is_unit());
+
+  Colour ret(0,0,0);
+
+  // add the ambient term
+  ret += AMBIENT * diffuse;
+
+  // add each light's term
+  for (vector<Light*>::const_iterator lit = LIGHTS.begin(); lit != LIGHTS.end(); ++lit) {
+    const Light & light = **lit;
+    Vector3D to_light = (light.position - at).unit();
+    double intensity = light.intensity(at);
+
+    // skip this light if it is behind the normal or it is in shadow
+    if (to_light.dot(normal) < 0) continue;
+    if (!light_is_visible(light, at)) continue;
+
+    // accumulate the diffuse component
+    ret += intensity * to_light.dot(normal) * diffuse * light.colour;
+    
+    // accumulate the specular component
+    // ignore the specular if the reflected light is in the wrong direction
+    Vector3D reflected  = reflect(incident, normal);
+    double refdot = reflected.dot(to_light);
+    if (refdot > 0) ret += intensity * pow(refdot, shininess) * specular * light.colour;
+  }
+
+  return ret;
+}
+
+double fresnel_reflection(double from_idx, double to_idx, const Vector3D & _incident, const Vector3D & normal) {
+  UnitVector3D incident(_incident);
+  assert(normal.is_unit());
+
+  assert(from_idx >= 1);
+  assert(to_idx >= 1);
+
+  // critical angle
+  if (incident.cross(normal).length2() * from_idx <= to_idx) return 1;
+
+  // compute cosines
+  double cos_theta_in  = -incident.dot(normal);
+  double cos_theta_out = sqrt(1 - from_idx/to_idx*(1 - cos_theta_in*cos_theta_in));
+    { // verify that this math is correct
+      double theta_out_1 = acos(cos_theta_out);
+      double theta_out_2 = asin(-incident.dot(normal) * from_idx / to_idx);
+      assert(abs(theta_out_1 - theta_out_2) < 1e-5);
+    }
+
+  // Fresnel Equation
+  double sqrt_rs = (from_idx*cos_theta_in - to_idx*cos_theta_out) / (from_idx*cos_theta_in + to_idx*cos_theta_out);
+  double sqrt_rp = (from_idx*cos_theta_out - to_idx*cos_theta_in) / (from_idx*cos_theta_out + to_idx*cos_theta_in);
+  
+  double rs = sqrt_rs * sqrt_rs;
+  double rp = sqrt_rp * sqrt_rp;
+
+  double ret = (rs + rp) / 2;
+
+  assert(0 < ret && ret < 1);
+  return ret;
+}
+
+Vector3D refracted_ray(double from_idx, double to_idx, const Vector3D & _incident, const Vector3D & normal) {
+  // http://graphics.stanford.edu/courses/cs148-10-summer/docs/2006--degreve--reflection_refraction.pdf
+  UnitVector3D incident(_incident);
+  assert(normal.is_unit());
+
+  assert(from_idx >= 1);
+  assert(to_idx >= 1);
+
+  double cos_in = -incident.dot(normal);
+  double nr = from_idx / to_idx;
+  double sin2out = nr*nr * (1 - cos_in*cos_in);
+
+  Vector3D ret = nr*incident + (nr*cos_in - sqrt(1 - sin2out))*normal;
+
+  assert(ret.dot(normal) < 0);
+  return ret;
 }
 

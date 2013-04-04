@@ -36,6 +36,7 @@ void read_options(int argc, char ** argv) {
       ("reverse,R", "Use matrix post-order composition instead of pre-order.")
       ("average-origin-spheres", "Use average-origin spheres to construct bounding regions.")
       ("quiet,Q", "Disable progress bars.")
+      ("max-depth", po::value<int>()->default_value(3), "Maximum number of reflections/refractions.")
   ;
 
   // positional options

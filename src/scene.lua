@@ -1,7 +1,7 @@
 -- test for hierarchical ray-tracers.
 -- Thomas Pflaum 1996
 
-gold = gr.material({0.9, 0.8, 0.4}, {0.8, 0.8, 0.4}, 25, 0.6)
+gold = gr.material({0.9, 0.8, 0.4}, {0.8, 0.8, 0.4}, 25, 0.3)
 grass = gr.material({0.1, 0.7, 0.1}, {0.0, 0.0, 0.0}, 0)
 blue = gr.material({0.7, 0.6, 1}, {0.5, 0.4, 0.8}, 25)
 
