@@ -201,8 +201,9 @@ int gr_nh_sphere_cmd(lua_State* L)
 
   //data->node = new GeometryNode(name, new NonhierSphere(pos, radius));
   data->node = new GeometryNode(name, new Sphere());
-  data->node->scale(Vector3D(radius, radius, radius));
+  // these transformations are backwards, because that's how the given code rolls
   data->node->translate(pos);
+  data->node->scale(Vector3D(radius, radius, radius));
 
   luaL_getmetatable(L, "gr.node");
   lua_setmetatable(L, -2);
@@ -229,8 +230,9 @@ int gr_nh_box_cmd(lua_State* L)
 
   //data->node = new GeometryNode(name, new NonhierBox(pos, size));
   data->node = new GeometryNode(name, new Cube());
-  data->node->scale(Vector3D(size, size, size));
+  // backwards. See sphere, above
   data->node->translate(pos);
+  data->node->scale(Vector3D(size, size, size));
 
   luaL_getmetatable(L, "gr.node");
   lua_setmetatable(L, -2);

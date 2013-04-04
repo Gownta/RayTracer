@@ -156,8 +156,10 @@ Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3
       // http://en.wikipedia.org/wiki/Opacity_(optics)
       double refr = 0;
       if (refraction) {
-        refr = exp(om->get_opacity() * refraction.distance);
+        refr = exp(-om->get_opacity() * refraction.distance);
         display = refraction.colour;
+      } else {
+        display = om->get_colour();
       }
       display = refr * display + (1 - refr) * om->get_colour();
     }
@@ -280,16 +282,39 @@ double fresnel_reflection(double from_idx, double to_idx, const Vector3D & _inci
   assert(to_idx >= 1);
 
   // critical angle
-  if (incident.cross(normal).length2() * from_idx <= to_idx) return 1;
+  if (abs(incident.cross(normal).length()) * from_idx > to_idx) {
+    if (0)
+    cout << "incident = " << incident << "\n"
+         << "normal   = " << normal << "\n"
+         << "cross    = " << incident.cross(normal) << "\n"
+         << "crosslen = " << incident.cross(normal).length() << "\n"
+         << "from idx = " << from_idx << "\n"
+         << "to idx   = " << to_idx << "\n"
+         << endl;
+    return 1;
+  }
 
   // compute cosines
   double cos_theta_in  = -incident.dot(normal);
-  double cos_theta_out = sqrt(1 - from_idx/to_idx*(1 - cos_theta_in*cos_theta_in));
+  double theta_out = asin(-incident.cross(normal).length() * from_idx / to_idx);
+  double cos_theta_out = cos(theta_out);
+  /*double cos_theta_out = sqrt(1 - from_idx/to_idx*(1 - cos_theta_in*cos_theta_in));
     { // verify that this math is correct
       double theta_out_1 = acos(cos_theta_out);
       double theta_out_2 = asin(-incident.dot(normal) * from_idx / to_idx);
+    cout << "incident = " << incident << "\n"
+         << "normal   = " << normal << "\n"
+         << "cross    = " << incident.cross(normal) << "\n"
+         << "crosslen = " << incident.cross(normal).length() << "\n"
+         << "-dot     = " << -incident.dot(normal) << "\n"
+         << "cos out  = " << cos_theta_out << "\n"
+         << "out      = " << theta_out_1 << "\n"
+         << "out      = " << theta_out_2 << "\n"
+         << "from idx = " << from_idx << "\n"
+         << "to idx   = " << to_idx << "\n"
+         << endl;
       assert(abs(theta_out_1 - theta_out_2) < 1e-5);
-    }
+    }*/
 
   // Fresnel Equation
   double sqrt_rs = (from_idx*cos_theta_in - to_idx*cos_theta_out) / (from_idx*cos_theta_in + to_idx*cos_theta_out);
@@ -300,6 +325,23 @@ double fresnel_reflection(double from_idx, double to_idx, const Vector3D & _inci
 
   double ret = (rs + rp) / 2;
 
+  /*if (!(0 < ret && ret < 1)) {
+  //if (0 >= ret || ret >= 1) {
+    cout << "incident      = " << incident << "\n"
+         << "normal        = " << normal << "\n"
+         << "sinoutn2n1    = " << (-incident.dot(normal) * from_idx / to_idx) << "\n"
+         << "exit?         = " << (bool)(incident.cross(normal).length() * from_idx > to_idx) << "\n"
+         << "ret           = " << ret << "\n"
+         << "cos_theta_in  = " << cos_theta_in << "\n"
+         << "cos_theta_out = " << cos_theta_out << "\n"
+         << "theta_in      = " << -incident.cross(normal).length() << "\n"
+         << "theta_out     = " << theta_out << "\n"
+         << "from idx      = " << from_idx << "\n"
+         << "to idx        = " << to_idx << "\n"
+         << "rs            = " << rs << "\n"
+         << "rp            = " << rp << "\n"
+         << endl;
+  }a*/
   assert(0 < ret && ret < 1);
   return ret;
 }
