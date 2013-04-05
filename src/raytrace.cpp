@@ -147,9 +147,8 @@ Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3
     Colour texture = get_texture(tm->get_texture_file(), closest.texture_pos[0], closest.texture_pos[1]);
     display = phong_light(at, uray, normal, texture, tm->get_specular() * texture, tm->get_shininess());
   } else if (OpticsMaterial * om = dynamic_cast<OpticsMaterial*>(closest.material)) {
-    if (!ENABLE_OPTICS) {
-      display = om->get_colour();
-    } else {
+    display = phong_light(at, uray, normal, om->get_colour(), Colour(1,1,1), 25);
+    if (ENABLE_OPTICS) {
       double idx = om->get_index();
       if (idx == index) idx = 1; // we are leaving the object.
       reflectivity = fresnel_reflection(index, idx, uray, normal);
@@ -157,15 +156,10 @@ Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3
         // some of the light is absorbed by the material
         // http://en.wikipedia.org/wiki/Opacity_(optics)
         // however, we use the constant-absorption model, as wavefronts do
-        // TODO phong lighting on om->get_colour
+        double absorbed = om->get_opacity();
         Vector3D refracted = refracted_ray(index, idx, uray, normal);
-        double refr = 1.0 - om->get_opacity();
-        auto refraction = get_colour(ROOT, at, refracted.unit(), idx, weight * (1 - reflectivity) * refr, depth + 1);
-        if (refraction) {
-          display = refr * refraction.colour + (1 - refr) * om->get_colour();
-        } else {
-          display = om->get_colour();
-        }
+        auto refraction = get_colour(ROOT, at, refracted.unit(), idx, weight * (1 - reflectivity) * (1 - absorbed), depth + 1);
+        if (refraction) display = absorbed * display + (1 - absorbed) * refraction.colour;
       }
     }
   } else {
