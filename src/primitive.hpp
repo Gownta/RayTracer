@@ -49,21 +49,33 @@ private:
 
 class Mesh : public Primitive {
 public:
-  typedef std::vector<int> Face;
-
   Mesh(const std::vector<Point3D>& verts,
-       const std::vector<Face>& faces)
-    : m_verts(verts), m_faces(faces) {}
+       const std::vector<std::vector<int>>& simple_faces);
+  Mesh(const std::vector<Point3D>  & vertices,
+       const std::vector<Vector3D> & normals,
+       const std::vector<Point3D>  & textures,
+       const std::vector<std::vector<std::vector<int>>> & faces); 
 
   virtual int intersections(const Point3D & origin, const Vector3D & ray,
                             IntersectionMode mode, Intersection where[]) const;
   virtual BoundingSphere get_bounds() const;
   
 protected:
-  std::vector<Point3D> m_verts;
-  std::vector<Face> m_faces;
+  struct Face {
+    std::vector<int> vertex_indices;
+    std::vector<int> normal_indices;
+    std::vector<int> texture_indices;
+    Point3D  base;
+    Vector3D basic_normal;
+  };
+  std::vector<Point3D>  m_vertices;
+  std::vector<Vector3D> m_normals;
+  std::vector<Point3D>  m_textures;
+  std::vector<Face>     m_faces;
 
-  friend std::ostream& operator<<(std::ostream& out, const Mesh& mesh);
+  void basify_faces();
+
+  //friend std::ostream& operator<<(std::ostream& out, const Mesh& mesh);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

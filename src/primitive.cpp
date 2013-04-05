@@ -44,12 +44,6 @@ Algebraic::Algebraic(const string & eqn, double radius)
 
 int Algebraic::intersections(const Point3D & origin, const Vector3D & ray,
                              IntersectionMode mode, Intersection where[]) const {
-  /*// for numerical stability, bring the origin closer to the bounding volume
-  // add inct to distance before returning the point of intersection
-  double inct = (Vector3D(_origin).length() - m_br) / ray.length();
-  if (inct < 0) inct = 0;
-  Point3D origin = _origin + inct*ray;*/
-
   // compute the intersection polynomial
   double c[5] = { 0 };
   for (const auto & f : m_eqn) {
@@ -153,47 +147,92 @@ bool Algebraic::contains(const Point3D & p) const {
 ///////////////////////////////////////////////////////////////////////////////
 // Meshes
 
+Mesh::Mesh(const std::vector<Point3D>& verts,
+           const std::vector<std::vector<int>> & simple_faces)
+    : m_vertices(verts)
+    , m_normals()
+    , m_textures()
+{
+  for (const auto & vi : simple_faces) {
+    Face f;
+    f.vertex_indices = vi;
+    m_faces.push_back(f);
+  }
+  basify_faces();
+}
+
+Mesh::Mesh(const std::vector<Point3D>  & vertices,
+           const std::vector<Vector3D> & normals,
+           const std::vector<Point3D>  & textures,
+           const std::vector<std::vector<std::vector<int>>> & faces)
+    : m_vertices(vertices)
+    , m_normals(normals)
+    , m_textures(textures)
+{
+  for (const auto & vvi : faces) {
+    Face f;
+    assert(vvi.size() == 3);
+    f.vertex_indices  = vvi[0];
+    f.normal_indices  = vvi[1];
+    f.texture_indices = vvi[2];
+    m_faces.push_back(f);
+  }
+  basify_faces();
+}
+
+void Mesh::basify_faces() {
+  for (auto & face : m_faces) {
+    assert(face.vertex_indices.size() >= 3);
+    const Point3D & p0 = m_vertices.at(face.vertex_indices.at(0));
+    const Point3D & p1 = m_vertices.at(face.vertex_indices.at(1));
+    const Point3D & p2 = m_vertices.at(face.vertex_indices.at(2));
+
+    face.base = p0;
+    face.basic_normal = (p1 - p0).cross(p2 - p1).unit();
+
+    // ensure all indices are within range
+    for (const auto & vi : face.vertex_indices ) m_vertices.at(vi);
+    for (const auto & vi : face.normal_indices ) m_normals .at(vi);
+    for (const auto & vi : face.texture_indices) m_textures.at(vi);
+
+    // ensure only triangles have augmented data (may extend to quads later)
+    if (face.normal_indices.size() > 0 || face.texture_indices.size() > 0) {
+      assert(face.vertex_indices .size() == 3);
+      assert(face.normal_indices .size() == 3 || face.normal_indices. empty());
+      assert(face.texture_indices.size() == 3 || face.texture_indices.empty());
+    }
+  }
+}
+
 int Mesh::intersections(const Point3D & origin, const Vector3D & uray,
                         IntersectionMode mode, Intersection where[]) const {
   double closest = INFINITY;
   int ret = 0;
-  for (vector<Face>::const_iterator it = m_faces.begin(); it != m_faces.end(); ++it) {
+
+  //cout << "attempting intersection with " << m_faces.size() << " faces\n";
+
+  for (const auto & face : m_faces) {
     // does the ray intersect this face?
-    const Face & face = *it;
-    
-    // get a normal for the face
-    Vector3D seg1 = m_verts[face.at(1)] - m_verts[face.at(0)];
-    Vector3D seg2 = m_verts[face.at(2)] - m_verts[face.at(1)];
-    Vector3D normal = seg1.cross(seg2).unit();
-    
-    double dot = uray.dot(normal);
-    if (dot > 0) {
-      normal = -normal;
-      dot = -dot;
-    }
 
     // a point is on the plane of the face if (p - q) dot n == 0
     // a point is on the ray if p = o + tr
-    // solve
-    if (-dot < EPSILON) continue;
-    double t = (origin - m_verts[face.at(0)]).dot(normal) / -dot;
+    // solve (albeit numerically unstable)
+    double dot = uray.dot(face.basic_normal);
+    if (abs(dot) < EPSILON) continue;
+    double t = (origin - face.base).dot(face.basic_normal) / -dot;
 
-    // TODO numerically unstable - |o+tr dot normal| might exceed EPSILON
-    
     if (t > EPSILON && (t < closest || mode != CLOSEST)) {
       // before we update the closest point of intersection, we need to make sure that the point is inside the poly
-      // TODO: OPTIMIZE
-
       Point3D point = origin + t * uray;
       Vector3D expected_cross = 
-          (m_verts[face[0]] - m_verts[face.back()])
+          (m_vertices[face.vertex_indices[0]] - m_vertices[face.vertex_indices.back()])
           .cross
-          (point            - m_verts[face.back()]);
+          (point                              - m_vertices[face.vertex_indices.back()]);
 
       bool inside = true;
-      for (size_t i = 1; i < face.size(); ++i) {
-        Point3D v0 = m_verts[face[i-1]];
-        Point3D v1 = m_verts[face[i]];
+      for (size_t i = 1; i < face.vertex_indices.size(); ++i) {
+        Point3D v0 = m_vertices[face.vertex_indices[i-1]];
+        Point3D v1 = m_vertices[face.vertex_indices[i  ]];
 
         Vector3D edge = v1    - v0;
         Vector3D dir  = point - v0;
@@ -205,17 +244,49 @@ int Mesh::intersections(const Point3D & origin, const Vector3D & uray,
       }
 
       if (inside) {
-        if (mode == EXISTENCE) return 1;
+        if (mode == EXISTENCE) return 1; // if close enough
+
+        // if necessary, compute the barycentric coordinates
+        Vector3D bary(0,0,0);
+        if (!face.normal_indices.empty() || !face.texture_indices.empty()) {
+          const Point3D & a = m_vertices[face.vertex_indices[0]];
+          const Point3D & b = m_vertices[face.vertex_indices[1]];
+          const Point3D & c = m_vertices[face.vertex_indices[2]];
+          bary = barycentric(a, b, c, point);
+        }
+
+        // compute the normal
+        if (face.normal_indices.empty()) {
+          where[ret].normal = face.basic_normal;
+        } else {
+          const Vector3D & an = m_normals[face.normal_indices[0]];
+          const Vector3D & bn = m_normals[face.normal_indices[1]];
+          const Vector3D & cn = m_normals[face.normal_indices[2]];
+          where[ret].normal = bary[0] * an + bary[1] * bn + bary[2] * cn; 
+        }
+        if (where[ret].normal.dot(uray) > 0) where[ret].normal = -where[ret].normal;
+
+        // compute the texture position
+        if (face.texture_indices.empty()) {
+          // this code can probably be deleted
+          where[ret].texture_pos[0] = 0;
+          where[ret].texture_pos[1] = 0;
+        } else {
+          const Vector3D at = Vector3D(m_textures[face.texture_indices[0]]);
+          const Vector3D bt = Vector3D(m_textures[face.texture_indices[1]]);
+          const Vector3D ct = Vector3D(m_textures[face.texture_indices[2]]);
+          Vector3D pos = bary[0] * at + bary[1] * bt + bary[2] * ct;
+          where[ret].texture_pos[0] = pos[0];
+          where[ret].texture_pos[1] = pos[1];
+        }
 
         where[ret].distance = t;
-        where[ret].normal = normal;
-        where[ret].texture_pos[0] = (point[0] + 1) / 2.0;
-        where[ret].texture_pos[1] = (point[2] + 1) / 2.0;
         ret++;
 
         assert(mode != CLOSEST || t < closest);
         closest = t;
       }
+
     }
   }
 
@@ -228,16 +299,16 @@ int Mesh::intersections(const Point3D & origin, const Vector3D & uray,
 }
 
 BoundingSphere Mesh::get_bounds() const {
-  return find_bounding_sphere(m_verts);
+  return find_bounding_sphere(m_vertices);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Instatiations
 
-Cube::Cube() : Mesh(vector<Point3D>(), vector<Face>()) {
+Cube::Cube() : Mesh(vector<Point3D>(), vector<vector<int>>()) {
   for (int i = 0; i < 8; ++i) {
     Point3D corner((bool)(i & 0x1), (bool)(i & 0x2), (bool)(i & 0x4));
-    m_verts.push_back(corner);
+    m_vertices.push_back(corner);
   }
 
   for (int j = 0; j < 6; ++j) {
@@ -250,40 +321,19 @@ Cube::Cube() : Mesh(vector<Point3D>(), vector<Face>()) {
         (j == 3 && !(i & 0x2)) ||
         (j == 4 &&  (i & 0x4)) ||
         (j == 5 && !(i & 0x4));
-      if (!exclude) f.push_back(i);
+      if (!exclude) f.vertex_indices.push_back(i);
     }
     
     // we need to order the vertices to be around the face, not diagonally.
-    if ((m_verts[f[0]] - m_verts[f[1]]).length2() > 1) std::swap(f[0], f[3]);
-    if ((m_verts[f[1]] - m_verts[f[2]]).length2() > 1) std::swap(f[0], f[1]);
+    if ((m_vertices[f.vertex_indices[0]] - m_vertices[f.vertex_indices[1]]).length2() > 1)
+      std::swap(f.vertex_indices[0], f.vertex_indices[3]);
+    if ((m_vertices[f.vertex_indices[1]] - m_vertices[f.vertex_indices[2]]).length2() > 1)
+      std::swap(f.vertex_indices[0], f.vertex_indices[1]);
 
-    assert(f.size() == 4);
+    assert(f.vertex_indices.size() == 4);
     m_faces.push_back(f);
   }
-}
 
-///////////////////////////////////////////////////////////////////////////////
-// printing
-
-std::ostream& operator<<(std::ostream& out, const Mesh& mesh)
-{
-  std::cerr << "mesh({";
-  for (std::vector<Point3D>::const_iterator I = mesh.m_verts.begin(); I != mesh.m_verts.end(); ++I) {
-    if (I != mesh.m_verts.begin()) std::cerr << ",\n      ";
-    std::cerr << *I;
-  }
-  std::cerr << "},\n\n     {";
-  
-  for (std::vector<Mesh::Face>::const_iterator I = mesh.m_faces.begin(); I != mesh.m_faces.end(); ++I) {
-    if (I != mesh.m_faces.begin()) std::cerr << ",\n      ";
-    std::cerr << "[";
-    for (Mesh::Face::const_iterator J = I->begin(); J != I->end(); ++J) {
-      if (J != I->begin()) std::cerr << ", ";
-      std::cerr << *J;
-    }
-    std::cerr << "]";
-  }
-  std::cerr << "});" << std::endl;
-  return out;
+  basify_faces();
 }
 

@@ -157,6 +157,7 @@ Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3
         // some of the light is absorbed by the material
         // http://en.wikipedia.org/wiki/Opacity_(optics)
         // however, we use the constant-absorption model, as wavefronts do
+        // TODO phong lighting on om->get_colour
         Vector3D refracted = refracted_ray(index, idx, uray, normal);
         double refr = 1.0 - om->get_opacity();
         auto refraction = get_colour(ROOT, at, refracted.unit(), idx, weight * (1 - reflectivity) * refr, depth + 1);
