@@ -98,7 +98,7 @@ prism = gr.mesh('prism', {
   {1,2,5,4},
   {2,0,3,5}
 })
-glass = gr.optics_material(1.5, 0.03, {0.8,0.8,1.0})
+glass = gr.optics_material(1.5, 0.1, {0.8,0.8,1.0})
 prism:set_material(glass)
 prism:rotate('Y', 17)
 prism:translate(0,-0.1,0)

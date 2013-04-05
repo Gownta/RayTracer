@@ -37,6 +37,8 @@ static map<string, Image*> TEXTURES;
 static int MAX_DEPTH;
 static double MIN_WEIGHT = 0.05;
 
+static bool ENABLE_OPTICS;
+
 ///////////////////////////////////////////////////////////////////////////////
 // headers
 
@@ -83,6 +85,7 @@ void setup(SceneNode * root, const Point3D & eye,
   FOV_SCALE = fov_scale;
 
   MAX_DEPTH = cmd_options()["max-depth"].as<int>();
+  ENABLE_OPTICS = !cmd_options().count("disable-optics");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -115,6 +118,9 @@ Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3
                          double index, double weight, double depth) {
   assert(uray.is_unit());
 
+  // return if too weak or too deep
+  if (weight < MIN_WEIGHT && depth > MAX_DEPTH) return Intersection2();
+
   // get the closest point of intersection
   Intersection where[256];
   int k = root->intersect(origin, uray, CLOSEST, where);
@@ -141,23 +147,25 @@ Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3
     Colour texture = get_texture(tm->get_texture_file(), closest.texture_pos[0], closest.texture_pos[1]);
     display = phong_light(at, uray, normal, texture, tm->get_specular() * texture, tm->get_shininess());
   } else if (OpticsMaterial * om = dynamic_cast<OpticsMaterial*>(closest.material)) {
-    double idx = om->get_index();
-    if (idx == index) idx = 1; // we are leaving the object.
-    reflectivity = fresnel_reflection(index, idx, uray, normal);
-    if (reflectivity < 1) {
-      Vector3D refracted = refracted_ray(index, idx, uray, normal);
-      auto refraction = get_colour(ROOT, at, refracted.unit(), idx, weight * (1 - reflectivity), depth + 1);
-      
-      // some of the light is absorbed by the material
-      // http://en.wikipedia.org/wiki/Opacity_(optics)
-      double refr = 0;
-      if (refraction) {
-        refr = exp(-om->get_opacity() * refraction.distance);
-        display = refraction.colour;
-      } else {
-        display = om->get_colour();
+    if (!ENABLE_OPTICS) {
+      display = om->get_colour();
+    } else {
+      double idx = om->get_index();
+      if (idx == index) idx = 1; // we are leaving the object.
+      reflectivity = fresnel_reflection(index, idx, uray, normal);
+      if (reflectivity < 1) {
+        // some of the light is absorbed by the material
+        // http://en.wikipedia.org/wiki/Opacity_(optics)
+        // however, we use the constant-absorption model, as wavefronts do
+        Vector3D refracted = refracted_ray(index, idx, uray, normal);
+        double refr = 1.0 - om->get_opacity();
+        auto refraction = get_colour(ROOT, at, refracted.unit(), idx, weight * (1 - reflectivity) * refr, depth + 1);
+        if (refraction) {
+          display = refr * refraction.colour + (1 - refr) * om->get_colour();
+        } else {
+          display = om->get_colour();
+        }
       }
-      display = refr * display + (1 - refr) * om->get_colour();
     }
   } else {
     cerr << "Unrecognized material" << endl;
@@ -167,7 +175,7 @@ Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3
   // add the reflective component
   // skip if weight is too low or depth is too deep
   assert(0 <= reflectivity && reflectivity <= 1);
-  if (weight > MIN_WEIGHT && depth < MAX_DEPTH && reflectivity > 0) {
+  if (ENABLE_OPTICS && reflectivity > 0) {
     auto reflection = get_colour(ROOT, at, reflected.unit(), index, weight * reflectivity, depth + 1);
     if (reflection) display = reflectivity * reflection.colour + (1 - reflectivity) * display;
   }
