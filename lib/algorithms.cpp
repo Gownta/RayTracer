@@ -214,3 +214,20 @@ Matrix4x4 scaling(const Vector3D & v) {
   return s;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Barycentric Calculations
+///////////////////////////////////////////////////////////////////////////////
+
+Vector3D barycentric(Point3D a, Point3D b, Point3D c, Point3D p) {
+  Vector3D ab = b - a;
+  Vector3D ac = c - a;
+  Vector3D ap = p - a;
+
+  double iA = 1.0 / (0.5 * ab.cross(ac).length());
+  double w = 0.5 * ab.cross(ap).length() * iA;
+  double v = 0.5 * ac.cross(ap).length() * iA;
+  double u = 1.0 - v - w;
+
+  return Vector3D(u, v, w);
+}
+
