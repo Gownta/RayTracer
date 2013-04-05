@@ -177,6 +177,13 @@ Mesh::Mesh(const std::vector<Point3D>  & vertices,
     f.texture_indices = vvi[2];
     m_faces.push_back(f);
   }
+
+  // normalize the normals
+  for (auto & normal : m_normals) {
+    normal.normalize();
+  }
+
+  triangulate_faces();
   basify_faces();
 }
 
@@ -200,6 +207,73 @@ void Mesh::basify_faces() {
       assert(face.vertex_indices .size() == 3);
       assert(face.normal_indices .size() == 3 || face.normal_indices. empty());
       assert(face.texture_indices.size() == 3 || face.texture_indices.empty());
+    }
+  }
+}
+
+void Mesh::triangulate_faces() {
+  vector<Face> old_faces;
+  old_faces.swap(m_faces);
+  assert(m_faces.empty());
+
+  // for each non-triangular face (assumed convex), triangulate using the midpoint
+  for (auto & face : old_faces) {
+    assert(face.vertex_indices.size() > 2);
+    if (face.vertex_indices.size() == 3) {
+      m_faces.push_back(move(face));
+    } else {
+      vector<Face> to_add;
+      to_add.resize(face.vertex_indices.size());
+
+      // vertices
+      if (true) {
+        Vector3D sum(0,0,0);
+        for (int v : face.vertex_indices) sum = sum + Vector3D(m_vertices[v]);
+        Point3D midpoint(sum / face.vertex_indices.size());
+        m_vertices.push_back(midpoint);
+
+        for (size_t i = 0; i < face.vertex_indices.size(); ++i) {
+          size_t j = (i + 1) % face.vertex_indices.size();
+          to_add[i].vertex_indices.push_back(face.vertex_indices[i]);
+          to_add[i].vertex_indices.push_back(face.vertex_indices[j]);
+          to_add[i].vertex_indices.push_back(m_vertices.size() - 1);
+        }
+      }
+
+      // normals
+      if (face.normal_indices.size() > 0) {
+        assert(face.normal_indices.size() == face.vertex_indices.size());
+        Vector3D sum(0,0,0);
+        for (int v : face.normal_indices) sum = sum + m_normals[v];
+        Vector3D midnorm(sum / face.normal_indices.size());
+        m_normals.push_back(midnorm);
+
+        for (size_t i = 0; i < face.normal_indices.size(); ++i) {
+          size_t j = (i + 1) % face.normal_indices.size();
+          to_add[i].normal_indices.push_back(face.normal_indices[i]);
+          to_add[i].normal_indices.push_back(face.normal_indices[j]);
+          to_add[i].normal_indices.push_back(m_normals.size() - 1);
+        }
+      }
+
+      // textures
+      if (face.texture_indices.size() > 0) {
+        assert(face.texture_indices.size() == face.vertex_indices.size());
+        Vector3D sum(0,0,0);
+        for (int v : face.texture_indices) sum = sum + Vector3D(m_textures[v]);
+        Point3D midtexture(sum / face.texture_indices.size());
+        m_textures.push_back(midtexture);
+
+        for (size_t i = 0; i < face.texture_indices.size(); ++i) {
+          size_t j = (i + 1) % face.texture_indices.size();
+          to_add[i].texture_indices.push_back(face.texture_indices[i]);
+          to_add[i].texture_indices.push_back(face.texture_indices[j]);
+          to_add[i].texture_indices.push_back(m_textures.size() - 1);
+        }
+      }
+
+      // add
+      m_faces.insert(m_faces.end(), to_add.begin(), to_add.end());
     }
   }
 }

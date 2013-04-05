@@ -73,9 +73,8 @@ protected:
   std::vector<Point3D>  m_textures;
   std::vector<Face>     m_faces;
 
+  void triangulate_faces();
   void basify_faces();
-
-  //friend std::ostream& operator<<(std::ostream& out, const Mesh& mesh);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

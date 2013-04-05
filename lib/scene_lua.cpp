@@ -245,54 +245,158 @@ extern "C"
 int gr_mesh_cmd(lua_State* L)
 {
   GRLUA_DEBUG_CALL;
+  int nargs = lua_gettop(L);
   
   gr_node_ud* data = (gr_node_ud*)lua_newuserdata(L, sizeof(gr_node_ud));
   data->node = 0;
 
   const char* name = luaL_checkstring(L, 1);
 
-  std::vector<Point3D> verts;
-  std::vector< std::vector<int> > faces;
+  if (nargs == 3) {
 
-  luaL_checktype(L, 2, LUA_TTABLE);
-  int vert_count = luaL_getn(L, 2);
-  
-  luaL_argcheck(L, vert_count >= 1, 2, "Tuple of vertices expected");
+    std::vector<Point3D> verts;
+    std::vector< std::vector<int> > faces;
 
-  for (int i = 1; i <= vert_count; i++) {
-    lua_rawgeti(L, 2, i);
-
-    Point3D vertex;
-    get_tuple(L, -1, &vertex[0], 3);
+    luaL_checktype(L, 2, LUA_TTABLE);
+    int vert_count = luaL_getn(L, 2);
     
-    verts.push_back(vertex);
-    lua_pop(L, 1);
-  }
+    luaL_argcheck(L, vert_count >= 1, 2, "Tuple of vertices expected");
 
-  luaL_checktype(L, 3, LUA_TTABLE);
-  int face_count = luaL_getn(L, 3);
-  
-  luaL_argcheck(L, face_count >= 1, 3, "Tuple of faces expected");
+    for (int i = 1; i <= vert_count; i++) {
+      lua_rawgeti(L, 2, i);
 
-  faces.resize(face_count);
-  
-  for (int i = 1; i <= face_count; i++) {
-    lua_rawgeti(L, 3, i);
+      Point3D vertex;
+      get_tuple(L, -1, &vertex[0], 3);
+      
+      verts.push_back(vertex);
+      lua_pop(L, 1);
+    }
 
-    luaL_checktype(L, -1, LUA_TTABLE);
-    int index_count = luaL_getn(L, -1);
-
-    luaL_argcheck(L, index_count >= 3, 3, "Tuple of indices expected");
-
-    faces[i - 1].resize(index_count);
-    get_tuple(L, -1, &faces[i - 1][0], index_count);
+    luaL_checktype(L, 3, LUA_TTABLE);
+    int face_count = luaL_getn(L, 3);
     
-    lua_pop(L, 1);
-  }
+    luaL_argcheck(L, face_count >= 1, 3, "Tuple of faces expected");
 
-  Mesh* mesh = new Mesh(verts, faces);
-  GRLUA_DEBUG(*mesh);
-  data->node = new GeometryNode(name, mesh);
+    faces.resize(face_count);
+    
+    for (int i = 1; i <= face_count; i++) {
+      lua_rawgeti(L, 3, i);
+
+      luaL_checktype(L, -1, LUA_TTABLE);
+      int index_count = luaL_getn(L, -1);
+
+      luaL_argcheck(L, index_count >= 3, 3, "Tuple of indices expected");
+
+      faces[i - 1].resize(index_count);
+      get_tuple(L, -1, &faces[i - 1][0], index_count);
+      
+      lua_pop(L, 1);
+    }
+
+    Mesh* mesh = new Mesh(verts, faces);
+    GRLUA_DEBUG(*mesh);
+    data->node = new GeometryNode(name, mesh);
+  } else {
+    assert(nargs == 5);
+
+    std::vector<Point3D>  vertices;
+    std::vector<Vector3D> normals;
+    std::vector<Point3D>  textures;
+    std::vector<std::vector<std::vector<int>>> faces;
+
+    // vertices
+    {
+    luaL_checktype(L, 2, LUA_TTABLE);
+    int vertex_count = luaL_getn(L, 2);
+    luaL_argcheck(L, vertex_count >= 1, 2, "Tuple of vertices expected");
+    for (int i = 1; i <= vertex_count; i++) {
+      lua_rawgeti(L, 2, i);
+
+      Point3D vertex;
+      get_tuple(L, -1, &vertex[0], 3);
+      
+      vertices.push_back(vertex);
+      lua_pop(L, 1);
+    }
+    }
+
+    /*cout << "vertices:\n";
+    for (auto & v : vertices) cout << v << "\n";
+    cout << endl;*/
+
+    // normals
+    {
+    luaL_checktype(L, 3, LUA_TTABLE);
+    int normal_count = luaL_getn(L, 3);
+    for (int i = 1; i <= normal_count; i++) {
+      lua_rawgeti(L, 3, i);
+
+      Vector3D normal;
+      get_tuple(L, -1, &normal[0], 3);
+      
+      normals.push_back(normal);
+      lua_pop(L, 1);
+    }
+    }
+
+    /*cout << "normals:\n";
+    for (auto & v : normals) cout << v << "\n";
+    cout << endl;*/
+
+    // textures
+    {
+    luaL_checktype(L, 4, LUA_TTABLE);
+    int texture_count = luaL_getn(L, 4);
+    for (int i = 1; i <= texture_count; i++) {
+      lua_rawgeti(L, 4, i);
+
+      Point3D texture;
+      get_tuple(L, -1, &texture[0], 3);
+      
+      textures.push_back(texture);
+      lua_pop(L, 1);
+    }
+    }
+
+    /*cout << "textures:\n";
+    for (auto & v : textures) cout << v << "\n";
+    cout << endl;*/
+
+    // faces
+    {
+    luaL_checktype(L, 5, LUA_TTABLE);
+    int face_count = luaL_getn(L, 5);
+    faces.resize(face_count);
+    luaL_argcheck(L, face_count >= 1, 5, "Tuple of faces expected");
+    for (int i = 1; i <= face_count; i++) {
+      lua_rawgeti(L, 5, i);
+
+      luaL_checktype(L, -1, LUA_TTABLE);
+      int part_count = luaL_getn(L, -1);
+      luaL_argcheck(L, part_count == 3, 4, "Vertex/Normal/Texture tables expected");
+      faces[i - 1].resize(3);
+
+      for (int j = 1; j <= 3; ++j) {
+        lua_rawgeti(L, -1, j);
+        luaL_checktype(L, -1, LUA_TTABLE);
+        int count = luaL_getn(L, -1);
+        faces[i - 1][j - 1].resize(count);
+        get_tuple(L, -1, &faces[i - 1][j - 1][0], count);
+
+        /*cout << "face["<<j<<"]:\n";
+        for (auto & v : faces[i-1][j - 1]) cout << v << ", ";
+        cout << endl;*/
+
+        lua_pop(L, 1);
+      }
+      lua_pop(L, 1);
+    }
+    }
+
+    Mesh* mesh = new Mesh(vertices, normals, textures, faces);
+    GRLUA_DEBUG(*mesh);
+    data->node = new GeometryNode(name, mesh);
+  }
 
   luaL_getmetatable(L, "gr.node");
   lua_setmetatable(L, -2);
