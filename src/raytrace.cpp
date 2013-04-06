@@ -215,14 +215,10 @@ Colour get_texture(const string & file, double x, double y) {
   }
 
   Image & img = *TEXTURES.at(file);
-  int w = img.width();
-  int h = img.height();
-  int posx = x * w;
-  int posy = y * h;
 
-  Colour ret(img(posx, posy, 0),
-             img(posx, posy, 1),
-             img(posx, posy, 2));
+  Colour ret(img(x, y, 0),
+             img(x, y, 1),
+             img(x, y, 2));
 
   return ret;
 }
