@@ -8,6 +8,7 @@ using namespace std;
 
 // compute bounding sphere for a mesh
 struct BoundingSphere {
+  BoundingSphere(double r = INFINITY, const Point3D & o = Point3D(0,0,0)) : radius(r), origin(o) {}
   double radius;
   Point3D origin;
 };
