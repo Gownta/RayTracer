@@ -244,25 +244,31 @@ addspace(keyboard_meta, 6, 12)
 addkey(keyboard_data, keyboard_meta, "Ralt", 6)
 addkey(keyboard_data, keyboard_meta, "Ropt", 6)
 addkey(keyboard_data, keyboard_meta, "Rctrl", 6)
-
+--]]
 keyboard_length = 980
 keyboard_height = 401
 keyboard_buffer = 10
 
---[[ do some post processing
+-- do some post processing
 ks = keyboard_scale
-b_idx = table.getn(keyboard_data[1])
-table.insert(keyboard_data[1], {-keyboard_buffer                  , -ks/3,  keyboard_buffer                  })
-table.insert(keyboard_data[1], { keyboard_buffer + keyboard_length, -ks/3,  keyboard_buffer                  })
-table.insert(keyboard_data[1], { keyboard_buffer + keyboard_length, -ks/3, -keyboard_buffer - keyboard_height})
-table.insert(keyboard_data[1], {-keyboard_buffer                  , -ks/3, -keyboard_buffer - keyboard_height})
+b_idx = table.getn(keyboard_data[2])
+table.insert(keyboard_data[2], {-keyboard_buffer                   - ks, -ks/3, -ks -keyboard_buffer                  })
+table.insert(keyboard_data[2], { keyboard_buffer + keyboard_length - ks, -ks/3, -ks -keyboard_buffer                  })
+table.insert(keyboard_data[2], { keyboard_buffer + keyboard_length - ks, -ks/3,     -keyboard_buffer + keyboard_height})
+table.insert(keyboard_data[2], {-keyboard_buffer                   - ks, -ks/3,     -keyboard_buffer + keyboard_height})
 
-table.insert(keyboard_data[1], {-keyboard_buffer                  , -ks/1.5, keyboard_buffer})
-table.insert(keyboard_data[1], { keyboard_buffer + keyboard_length, -ks/1.5, keyboard_buffer})--]]
+table.insert(keyboard_data[2], {-keyboard_buffer                  , -ks/1.5, keyboard_buffer})
+table.insert(keyboard_data[2], { keyboard_buffer + keyboard_length, -ks/1.5, keyboard_buffer})
+
+table.insert(keyboard_data[5], {{ b_idx + 0, b_idx + 1, b_idx + 2, b_idx + 3 }, {}, {0,0,0,0}})
+--table.insert(keyboard_data[5], {{ b_idx + 0, b_idx + 1, b_idx + 5, b_idx + 4 }, {}, {0,0,0,0}})
+--table.insert(keyboard_data[5], {{ b_idx + 4, b_idx + 5, b_idx + 2, b_idx + 3 }, {}, {0,0,0,0}})
+--table.insert(keyboard_data[5], {{ b_idx + 0, b_idx + 4, b_idx + 3 }, {}, {0,0,0}})
+--table.insert(keyboard_data[5], {{ b_idx + 1, b_idx + 5, b_idx + 2 }, {}, {0,0,0}})
 
 -- Return the keyboard mesh
 keyboard = gr.mesh(keyboard_data[1], keyboard_data[2], keyboard_data[3], keyboard_data[4], keyboard_data[5])
-kbt = gr.texture_material('keyboard.png', {1,1,1}, 25)
+kbt = gr.texture_material('keyboard.png', {0,0,0,}, 1)
 keyboard:set_material(kbt)
 keyboard:scale(1/keyboard_scale, 1/keyboard_scale, 1/keyboard_scale)
 
