@@ -28,6 +28,12 @@ void set_background(ZPic & img) {
     for (int x = 0; x < width; ++x) for (int y = 0; y < height; ++y) {
       img(x, y).back = Colour(0, 1 - (double)y / height, 1 - (double)y / height);
     }
+  } else if (bg == 4) {
+    // black-yellow stripes
+    for (int x = 0; x < width; ++x) for (int y = 0; y < height; ++y) {
+      double c = ((x + y) / 32) % 2;
+      img(x, y).back = Colour(c, c, 0);
+    }
   } else {
     // black
     for (int x = 0; x < width; ++x) for (int y = 0; y < height; ++y) {

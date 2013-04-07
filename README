@@ -10,3 +10,8 @@ EXISTENCE intersections need to be checked against the maximum distance
 ASSUMPTIONS
 
 All meshes are closed shapes, so we may use Jordan Curve to determine if we are inside or outside.
+
+======
+IMAGES
+
+http://www.sacred-geometry.es/sg/sites/default/files/images/Arquimedean_Scheme.png
