@@ -1,9 +1,22 @@
 #include <iostream>
 #include "program_options.hpp"
 #include "scene_lua.hpp"
+#include <cstdlib>
 using namespace std;
 
+/*#include "algorithms.hpp"
+#include <iomanip>
+void outr() {
+  cout << setprecision(10);
+  for (int i = 0; i < 1000; ++i) {
+    Vector3D r = random_normal();
+    cout << "{ " << r[0] << ", " << r[1] << ", " << r[2] << " },\n";
+  }
+}*/
+
 int main(int argc, char ** argv) {
+  srand(time(NULL));
+
   read_options(argc, argv);
 
   // Help

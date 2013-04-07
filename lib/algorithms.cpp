@@ -231,3 +231,20 @@ Vector3D barycentric(Point3D a, Point3D b, Point3D c, Point3D p) {
   return Vector3D(u, v, w);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Random Normals
+///////////////////////////////////////////////////////////////////////////////
+
+Vector3D random_normal() {
+  // The area of a polar cap of a sphere is 2*pi*r*h, where h is the height
+  // of the cap. This implies that a random point on the sphere has a height
+  // which is uniformly distributed across [-1,1].
+  // A random longitude has angle randomly in [0,360)
+  double theta = (rand() % 3600) / 3600.0 * 2*M_PI;
+  double x = cos(theta);
+  double z = sin(theta);
+  double y = ((rand() % 1048576) / 1048576.0 - 0.5) * 2;
+  double scale = sqrt(1 - y*y);
+  return Vector3D(x*scale, y, z*scale);
+}
+

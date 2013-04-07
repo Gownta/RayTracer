@@ -22,5 +22,8 @@ Matrix4x4 scaling(const Vector3D& scale);
 // compute barycentric co-ordinates for p inside a,b,c
 Vector3D barycentric(Point3D a, Point3D b, Point3D c, Point3D p);
 
+// compute a point on the unit sphere
+Vector3D random_normal();
+
 #endif // ALGORITHMS_H
 

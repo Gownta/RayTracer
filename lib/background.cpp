@@ -34,6 +34,11 @@ void set_background(ZPic & img) {
       double c = ((x + y) / 32) % 2;
       img(x, y).back = Colour(c, c, 0);
     }
+  } else if (bg == 5) {
+    // white
+    for (int x = 0; x < width; ++x) for (int y = 0; y < height; ++y) {
+      img(x, y).back = Colour(1, 1, 1);
+    }
   } else {
     // black
     for (int x = 0; x < width; ++x) for (int y = 0; y < height; ++y) {
