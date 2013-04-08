@@ -28,18 +28,7 @@ OBJECTIVES:
 10: Photon mapping.
 
 
-====
-TODO
 
-in primitives.cpp, make a better pow function (since I will only be calling it for powers of 0..4)
-change --help's 'Allowed Options' to 'Options'
-cast 4 rays per pixel - if they do not all yield the same colour, then anti-alias
-EXISTENCE intersections need to be checked against the maximum distance
-
-===========
-ASSUMPTIONS
-
-All meshes are closed shapes, so we may use Jordan Curve to determine if we are inside or outside.
 
 ======
 IMAGES
