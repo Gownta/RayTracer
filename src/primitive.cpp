@@ -6,6 +6,17 @@
 
 using namespace std;
 
+static inline double ipow(double b, int e) {
+  switch (e) {
+    case 0: return 1;
+    case 1: return b;
+    case 2: return b*b;
+    case 3: return b*b*b;
+    case 4: return (b*b)*(b*b);
+  }
+  assert(false);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Algebraics
 
@@ -48,12 +59,12 @@ int Algebraic::intersections(const Point3D & origin, const Vector3D & ray,
   double c[5] = { 0 };
   for (const auto & f : m_eqn) {
     c[f.pow_t] += f.k
-                  * pow(origin[0], f.pow_ox) 
-                  * pow(origin[1], f.pow_oy) 
-                  * pow(origin[2], f.pow_oz) 
-                  * pow(ray[0], f.pow_rx)
-                  * pow(ray[1], f.pow_ry)
-                  * pow(ray[2], f.pow_rz);
+                  * ipow(origin[0], f.pow_ox) 
+                  * ipow(origin[1], f.pow_oy) 
+                  * ipow(origin[2], f.pow_oz) 
+                  * ipow(ray[0], f.pow_rx)
+                  * ipow(ray[1], f.pow_ry)
+                  * ipow(ray[2], f.pow_rz);
   }
 
   // find the roots
@@ -86,21 +97,21 @@ int Algebraic::intersections(const Point3D & origin, const Vector3D & ray,
       double dx = 0, dy = 0, dz = 0;
       for (const auto & f : m_dx) {
         dx += f.k
-              * pow(at[0], f.pow_x)
-              * pow(at[1], f.pow_y)
-              * pow(at[2], f.pow_z);
+              * ipow(at[0], f.pow_x)
+              * ipow(at[1], f.pow_y)
+              * ipow(at[2], f.pow_z);
       }
       for (const auto & f : m_dy) {
         dy += f.k
-              * pow(at[0], f.pow_x)
-              * pow(at[1], f.pow_y)
-              * pow(at[2], f.pow_z);
+              * ipow(at[0], f.pow_x)
+              * ipow(at[1], f.pow_y)
+              * ipow(at[2], f.pow_z);
       }
       for (const auto & f : m_dz) {
         dz += f.k
-              * pow(at[0], f.pow_x)
-              * pow(at[1], f.pow_y)
-              * pow(at[2], f.pow_z);
+              * ipow(at[0], f.pow_x)
+              * ipow(at[1], f.pow_y)
+              * ipow(at[2], f.pow_z);
       }
       Vector3D normal = Vector3D(dx, dy, dz).unit();
 
@@ -136,9 +147,9 @@ bool Algebraic::contains(const Point3D & p) const {
   double val = 0;
   for (const auto & f : m_xyzq) {
     double t = f.k
-               * pow(p[0], f.pow_x)
-               * pow(p[1], f.pow_y)
-               * pow(p[2], f.pow_z);
+               * ipow(p[0], f.pow_x)
+               * ipow(p[1], f.pow_y)
+               * ipow(p[2], f.pow_z);
     val += t;
   }
   return val <= 0;
