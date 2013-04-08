@@ -42,13 +42,15 @@ static bool ENABLE_OPTICS;
 ///////////////////////////////////////////////////////////////////////////////
 // headers
 
+static void photon_map(ZPic & zimg);
 static Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3D & uray,
-                                double index_of_refraction = 1.0, double weight = 1, double depth = 0);
+                                double index_of_refraction = 1.0, double weight = 1, double depth = 0, bool photon = false);
 static void get_geometry_nodes(vector<GeometryNode*> & ret, SceneNode * root);
 static bool light_is_visible(const Light & light, const Point3D & p);
 static Colour get_texture(const string & file, double x, double y);
 
 static UnitVector3D cast_ray(int x, int y, double dx, double dy);
+static Point3D inv_cast_ray(const Vector3D & vec);
 static Vector3D reflect(const Vector3D & incident, const Vector3D & normal);
 static Colour phong_light(const Point3D & at, const Vector3D & incident, const Vector3D & normal,
                           const Colour & diffuse, const Colour & specular, double shininess);
@@ -109,13 +111,42 @@ void raytrace(ZPic & zimg) {
     }
   }
   complete_progress("rendering");
+
+  if (0) photon_map(zimg);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Photon map
+
+ZPic * PMZ = 0;
+void photon_map(ZPic & zimg) {
+  PMZ = &zimg;
+  for (vector<Light*>::const_iterator lit = LIGHTS.begin(); lit != LIGHTS.end(); ++lit) {
+    const Light & light = **lit;
+    for (int i = 0; i < 10000000; ++i) {
+      Vector3D dir = random_normal();
+      get_colour(ROOT, light.position, dir, 1, 1, 0, true);
+    }
+  }
+}
+
+void register_photon(const Point3D & at, const Vector3D & from, double weight,
+                     const Colour & diffuse, const Colour & spec, double shininess) {
+  Vector3D from_eye = at - EYE;
+
+  Point3D pixel = inv_cast_ray(from_eye);
+  int x = pixel[0];
+  int y = pixel[1];
+  if (0 <= x && x < PMZ->width() && 0 <= y && y < PMZ->height() && (*PMZ)(x,y).depth < INFINITY) {
+    (*PMZ)(x,y).colour += /*weight * from.unit().dot(from_eye.unit()) * */ diffuse;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Main functions.
 
 Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3D & uray,
-                         double index, double weight, double depth) {
+                         double index, double weight, double depth, bool photon) {
   assert(uray.is_unit());
 
   // return if too weak or too deep
@@ -142,9 +173,11 @@ Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3
   // get the main colour and reflective component
   if (PhongMaterial * pm = dynamic_cast<PhongMaterial*>(closest.material)) {
     reflectivity = pm->get_reflectivity();
+    if (photon && depth > 0) register_photon(at, uray, weight, pm->get_diffuse(), pm->get_specular(), pm->get_shininess());
     display = phong_light(at, uray, normal, pm->get_diffuse(), pm->get_specular(), pm->get_shininess());
   } else if (TextureMaterial * tm = dynamic_cast<TextureMaterial*>(closest.material)) {
     Colour texture = get_texture(tm->get_texture_file(), closest.texture_pos[0], closest.texture_pos[1]);
+    if (photon && depth > 0) register_photon(at, uray, weight, texture, tm->get_specular() * texture, tm->get_shininess());
     display = phong_light(at, uray, normal, texture, tm->get_specular() * texture, tm->get_shininess());
   } else if (OpticsMaterial * om = dynamic_cast<OpticsMaterial*>(closest.material)) {
     display = phong_light(at, uray, normal, om->get_colour(), Colour(1,1,1), 25);
@@ -158,7 +191,8 @@ Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3
         // however, we use the constant-absorption model, as wavefronts do
         double absorbed = om->get_opacity();
         Vector3D refracted = refracted_ray(index, idx, uray, normal);
-        auto refraction = get_colour(ROOT, at, refracted.unit(), idx, weight * (1 - reflectivity) * (1 - absorbed), depth + 1);
+        auto refraction = get_colour(ROOT, at, refracted.unit(),
+                                     idx, weight * (1 - reflectivity) * (1 - absorbed), depth + 1, photon);
         if (refraction) display = absorbed * display + (1 - absorbed) * refraction.colour;
       }
     }
@@ -171,7 +205,7 @@ Intersection2 get_colour(SceneNode * root, const Point3D & origin, const Vector3
   // skip if weight is too low or depth is too deep
   assert(0 <= reflectivity && reflectivity <= 1);
   if (ENABLE_OPTICS && reflectivity > 0) {
-    auto reflection = get_colour(ROOT, at, reflected.unit(), index, weight * reflectivity, depth + 1);
+    auto reflection = get_colour(ROOT, at, reflected.unit(), index, weight * reflectivity, depth + 1, photon);
     if (reflection) display = reflectivity * reflection.colour + (1 - reflectivity) * display;
   }
 
@@ -230,6 +264,20 @@ static UnitVector3D cast_ray(int x, int y, double dx, double dy) {
   double cy = (double)HEIGHT / 2.0 - y + dy;
   Vector3D ray = Z + cx * FOV_SCALE * X + cy * FOV_SCALE * Y;
   return ray;
+}
+
+static Point3D inv_cast_ray(const Vector3D & vec) {
+  double xd = vec.dot(X);
+  double yd = vec.dot(Y);
+  double zd = vec.dot(Z);
+
+  double cx = xd / FOV_SCALE / zd;
+  double cy = yd / FOV_SCALE / zd;
+
+  double x = cx - (double)WIDTH / 2.0;
+  double y = cy - (double)HEIGHT / 2.0;
+
+  return Point3D(x, y, 0);
 }
 
 Vector3D reflect(const Vector3D & incident, const Vector3D & normal) {
