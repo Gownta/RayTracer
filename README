@@ -1,3 +1,33 @@
+Nicholas J. Ormrod
+njormrod
+20309402
+
+CS 488 Graphics
+Final Project
+Winter 2013
+Prof. Stephen Mann
+
+===================
+
+Usage: rt [options] [filename]
+To see the available options, run "rt --help", or refer to the manual.
+
+===================
+
+OBJECTIVES:
+
+1:  Elegant workspace scene.
+2:  Texture mapping.
+3:  CFG keyboard.
+4:  Phong shading.
+5:  Reflection.
+6:  Refraction.
+7:  Selecitve anti-aliasing.
+8:  Arbitrary 4th degree algebraics.
+9:  CSG.
+10: Photon mapping.
+
+
 ====
 TODO
 
@@ -54,4 +84,11 @@ Coke textures:
 http://img197.imageshack.us/img197/4969/labela.jpg
 http://thumbs.dreamstime.com/thumblarge_576/1295646698lAMrFW.jpg
 http://www.worldofstock.com/slides/BGT1753.jpg
+
+Workspace:
+http://www.cgtextures.com/texview.php?id=32970&PHPSESSID=46qu8hud2fbn2vp3jabu6i3u23
+http://www.cgtextures.com/texview.php?id=15486&PHPSESSID=46qu8hud2fbn2vp3jabu6i3u23
+http://www.templates.com/blog/wp-content/uploads/2010/04/Texture-Book-Cover-Plates-by-watersolube.jpg
+http://preview.turbosquid.com/Preview/Content_2010_12_03__11_09_29/Book-1det3.jpg1307e0aa-6054-4275-8159-9b19fb9634f4Larger.jpg
+http://i1158.photobucket.com/albums/p605/Crystylizd/nexus_4_2013-2-14-17-57-6_zpsd7fd01c7.png
 
