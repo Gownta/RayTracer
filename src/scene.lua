@@ -1,64 +1,134 @@
--- CSG spheres on spheres
+-- Fire refraction
 
 scene = gr.node('scene')
-scene:rotate('Y', 40)
-scene:rotate('X', 25)
-scene:translate(-3,0,-12)
+scene:translate(0,1.9,-10)
 
 -------------------
--- The balls
+-- Lens - radius 0.5
 
-dispx = 0
-dispz = 0
-s     = 1
-dir   = 0
-n     = 30
-d     = 2.2
-rf    = 1
+f1 = 4
+f2 = 4
 
-ddir  = 25 * (2 * 3.14159265 / 360)
-ss    = 0.85
+r1 = math.sqrt(f1 * f1 + 0.5*0.5)
+r2 = math.sqrt(f2 * f2 + 0.5*0.5)
 
-for idx = 0, n do
-  -- place a ball
-  ball = gr.sphere('ball')
+glass = gr.optics_material(1.5,0.05,{0.8,0.8,1.0})
+border = gr.material({0.2,0.1,0},{0,0,0},1)
 
-  red = rf * (1 - math.pow(s, (idx + 1) / 2))
-  blue = 1 - red
-  red = 0.3 * red
-  mat = gr.material({red, 0, blue}, {red, 0, blue}, 35, 0.6)
-  ball:set_material(mat)
+c1 = gr.sphere('c1')
+c1:set_material(glass)
+c1:scale(r1,r1,r1)
+c1:translate(0,0,-f1)
 
-  ball:scale(s,s,s)
-  ball:translate(dispx, s, dispz)
+c2 = gr.sphere('c2')
+c2:set_material(glass)
+c2:scale(r2,r2,r2)
+c2:translate(0,0, f2)
 
-  scene:add_child(ball)
+optic = gr.csg('optical glass', c1, '*', c2, 0.5)
 
-  dispx = dispx + d * s * math.cos(dir)
-  dispz = dispz + d * s * math.sin(dir)
-  s = s*ss
-  dir = dir + ddir
-end
+edge = gr.algebraic('torus', '(x^2 + y^2 + z^2 + 0.53^2 - 0.05^2)^2 - 4*0.53^2*(x^2 + y^2)', 0.53+0.05)
+edge:set_material(border)
+
+lens = gr.node('lens')
+lens:add_child(optic)
+lens:add_child(edge)
+lens:scale(1.5,1.5,1.5)
+lens:translate(0,-2.1,4)
+
+scene:add_child(lens)
 
 -------------------
--- the floor
+-- Glass balls
 
-plane = gr.mesh('plane', {
-	{-1, 0, -1},
-	{ 1, 0, -1},
-	{1,  0, 1},
-	{-1, 0, 1},
-     }, {
-	{3, 2, 1, 0}
-     })
-scene:add_child(plane)
-floor = gr.material({0.8,0.8,1.0},{0,0,0}, 1, 0.7)
-plane:set_material(floor)
-plane:scale(30, 30, 30)
+b1 = gr.sphere('ball')
+b1:set_material(glass)
+b1:translate(3,-2,1)
 
+scene:add_child(b1)
 
-white_light = gr.light({-10,10,10}, {1.0, 1.0, 1.0}, {1, 0, 0})
-gr.render(scene, 'mirror_balls.png', 1024, 576,
+-------------------
+-- Prism
+
+prism = gr.mesh('prism', {
+  {0,0,0},
+  {1,0,0},
+  {0.5,0,0.866025},
+  {0,2,0},
+  {1,2,0},
+  {0.5,2,0.866025} 
+}, {
+  {0,1,2},
+  {3,4,5},
+  {0,1,4,3},
+  {1,2,5,4},
+  {2,0,3,5}
+})
+prism:set_material(glass)
+
+pris = gr.node('prism setup')
+pris:add_child(prism)
+pris:rotate('Y', 43)
+pris:scale(1,1.05,1)
+pris:translate(-3.7,-3.1,0.5)
+
+scene:add_child(pris)
+
+-------------------
+-- Fire
+
+fire = gr.mesh('fire',
+  { -- vertices
+    {-6, 4,-2},
+    { 6, 4,-2},
+    { 6,-4,-2},
+    {-6,-4,-2},
+  }, { -- normals
+  }, { -- textures
+    {0,0,0},
+    {6000-1,0,0},
+    {6000-1,4000-1,0},
+    {0,4000-1,0},
+  }, { -- faces
+    {
+      {0,1,2,3},
+      {},
+      {0,1,2,3}
+    }
+  })
+fire:set_material(gr.texture_material('fire.png', {0,0,0}, 1))
+scene:add_child(fire)
+
+-------------------
+-- Marble
+
+marble = gr.mesh('fire',
+  { -- vertices
+    { 6,-3,-2},
+    {-6,-3,-2},
+    {-6,-3, 7},
+    { 6,-3, 7},
+  }, { -- normals
+  }, { -- textures
+    {0,0,0},
+    {1032-1,0,0},
+    {1032-1,774-1,0},
+    {0,774-1,0},
+  }, { -- faces
+    {
+      {0,1,2,3},
+      {},
+      {0,1,2,3}
+    }
+  })
+marble:set_material(gr.texture_material('blue_marble.png', {0,0,0}, 1))
+scene:add_child(marble)
+
+-------------------
+-- Render
+
+white_light = gr.light({-3,10,-4}, {1.0, 1.0, 1.0}, {1, 0, 0})
+gr.render(scene, 'refracting_fire.png', 1024, 448,
 	  {0,0,0}, {0, 0, -1}, {0, 1, 0}, 50,
 	  {0.3, 0.3, 0.3}, {white_light})
 
